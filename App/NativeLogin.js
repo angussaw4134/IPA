@@ -146,7 +146,13 @@
     });
     remove.addEventListener('click', toggle);
     implementation = {ready, afterPin, cancel, toggle, state, lock() { automaticAttempt = true; cancel(); }};
-    window.addEventListener('accesshub-native-background', () => { if (busy || transitioning) cancel(); });
+    window.addEventListener('accesshub-native-background', () => {
+      automaticAttempt = true;
+      if (busy || transitioning) cancel();
+    });
+    window.addEventListener('accesshub-native-foreground', () => {
+      if (!busy && !transitioning) { refreshedToken = ''; ready(); }
+    });
     paint(); ready();
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initialize, {once: true});

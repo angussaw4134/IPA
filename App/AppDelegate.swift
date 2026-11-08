@@ -192,6 +192,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     func becameActive() {
         setPrivacyVisible(false)
         security.becameActive()
+        webView?.evaluateJavaScript("window.dispatchEvent(new Event('accesshub-native-foreground'))", completionHandler: nil)
     }
 
     private func openExternal(_ url: URL) {

@@ -96,6 +96,17 @@ test('system cancellation leaves PIN usable; an unverified reply cannot unlock',
   t.$('passkey-login').click(); await flush(); t.runTimers(); assert.deepEqual(t.shows, []);
   t.context.pinBusy = true; await t.api.afterPin(); t.runTimers(); assert.deepEqual(t.shows, ['home']);
 });
+test('returning after a background cancellation restores the enrolled button without auto-unlocking', async () => {
+  const t = setup({enabled: true, automatic: true});
+  let resolve; t.setPending(new Promise(r => resolve = r));
+  t.initialize(); await flush(); t.events['accesshub-native-background']();
+  resolve({verified: true}); await flush();
+  t.events['accesshub-native-foreground'](); await flush(); t.runTimers();
+  assert.equal(t.api.state().enabled, true);
+  assert.equal(t.$('passkey-login-label').hidden, true);
+  assert.deepEqual(t.shows, []);
+  assert.equal(t.calls.filter(c => c.action === 'authenticate').length, 1);
+});
 test('manual login, persistent disable, failed disable, and reenrollment use native bridge', async () => {
   const t = setup({enabled: true}); t.initialize(); await flush();
   assert.equal(t.calls.some(c => c.action === 'authenticate'), false);

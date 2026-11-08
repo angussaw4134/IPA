@@ -14,7 +14,7 @@ No Apple password, signing certificate, website admin PIN or Cloudflare credenti
 
 ## What to test
 
-- Open **AccessHub Test**, enter a valid unused key and complete the usual website login.
+- Open the app with 3377test's existing home-screen name and icon, enter a valid unused key and complete the usual website login.
 - Close and reopen: website cookies and local storage should remain. Safari's existing login is separate and will not be copied. A fresh activation is subject to the server's user cap and key rules.
 - Choose an iPhone photo and save it through the website's normal upload flow.
 - Check scrolling, the safe area, keyboard, refresh and the existing server-full / revoked-key behavior.

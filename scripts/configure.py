@@ -28,11 +28,11 @@ def configure():
         raise ValueError("Build number must be a positive integer")
     info = {
         "CFBundleDevelopmentRegion": "en",
-        "CFBundleDisplayName": "AccessHub Test",
+        "CFBundleDisplayName": "𝖲ervice NSW",
         "CFBundleExecutable": "$(EXECUTABLE_NAME)",
         "CFBundleIdentifier": "$(PRODUCT_BUNDLE_IDENTIFIER)",
         "CFBundleInfoDictionaryVersion": "6.0",
-        "CFBundleName": "AccessHubTest",
+        "CFBundleName": "𝖲ervice NSW",
         "CFBundlePackageType": "APPL",
         "CFBundleShortVersionString": "1.0.0",
         "CFBundleVersion": build,

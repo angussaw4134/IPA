@@ -76,7 +76,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
 
         // A native label stays visible on every page, without covering touch targets.
         let demo = UILabel()
-        demo.text = "TEST DEMO BUILD"
+        demo.text = "Testing Phase Demo build"
         demo.textColor = .white
         demo.font = .systemFont(ofSize: 30, weight: .heavy)
         demo.textAlignment = .center

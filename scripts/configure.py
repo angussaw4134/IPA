@@ -102,6 +102,7 @@ def configure():
 }
 '''
     # Add the storefront route policy and its web navigation bridge.
+    project = project.replace('SWIFT_OPTIMIZATION_LEVEL = "-Onone";', 'SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;')
     project = project.replace('A00000000000000000000035); path = App;',
                               'A00000000000000000000035, A00000000000000000000037, A00000000000000000000039); path = App;')
     project = project.replace('A00000000000000000000036); runOnly', 'A00000000000000000000036, A00000000000000000000038); runOnly')

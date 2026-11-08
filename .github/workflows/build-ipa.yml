@@ -78,5 +78,6 @@ jobs:
             build/storefront-simulator-results.json
             build/storefront-simulator.png
             build/simulator-build.log
+            build/storefront-runtime.log
           if-no-files-found: ignore
           retention-days: 14

@@ -65,7 +65,11 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         let receipt: [String: Any] = ["count": count, "pid": ProcessInfo.processInfo.processIdentifier]
         if let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first,
            let data = try? JSONSerialization.data(withJSONObject: receipt) {
-            try? data.write(to: folder.appendingPathComponent("storefront-launch.json"), options: .atomic)
+            do {
+                try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+                try data.write(to: folder.appendingPathComponent("storefront-launch.json"), options: .atomic)
+                NSLog("Storefront URL received: %d", count)
+            } catch { NSLog("Storefront test receipt error: %@", error.localizedDescription) }
         }
         #endif
         deliverStorefrontHome()

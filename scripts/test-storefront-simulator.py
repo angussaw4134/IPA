@@ -3,6 +3,7 @@ import json
 import pathlib
 import subprocess
 import time
+import atexit
 
 BUNDLE = "dev.accesshub.sidestoretest"
 
@@ -15,6 +16,12 @@ device = next(d for runtime, group in sorted(devices.items(), reverse=True)
 udid = device["udid"]
 run("xcrun", "simctl", "boot", udid, check=False)
 run("xcrun", "simctl", "bootstatus", udid, "-b")
+def capture_evidence():
+    run("xcrun", "simctl", "io", udid, "screenshot", "build/storefront-simulator.png", check=False)
+    log = run("xcrun", "simctl", "spawn", udid, "log", "show", "--last", "3m", "--style", "compact",
+              "--predicate", 'process == "AccessHubTest"', check=False)
+    pathlib.Path("build/storefront-runtime.log").write_text(log)
+atexit.register(capture_evidence)
 app = "build/Simulator/Build/Products/Debug-iphonesimulator/AccessHubTest.app"
 run("xcrun", "simctl", "install", udid, app)
 container = pathlib.Path(run("xcrun", "simctl", "get_app_container", udid, BUNDLE, "data"))
@@ -57,4 +64,3 @@ pathlib.Path("build/storefront-simulator-results.json").write_text(json.dumps({
     "terminated": True, "unsupportedHostRejected": True,
     "scope": "Native URL delivery; authorized Home routing covered separately by JS tests. Physical iPhone required for signing, layout, Face ID and app-switcher privacy."
 }, indent=2))
-run("xcrun", "simctl", "shutdown", udid)

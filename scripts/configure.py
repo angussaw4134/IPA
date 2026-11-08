@@ -36,6 +36,12 @@ def configure():
         "CFBundlePackageType": "APPL",
         "CFBundleShortVersionString": "1.0.0",
         "CFBundleVersion": build,
+        "CFBundleURLTypes": [{
+            "CFBundleURLName": "dev.accesshub.sidestoretest.storefront",
+            "CFBundleTypeRole": "Viewer",
+            "CFBundleURLSchemes": ["storefrontdemo"],
+        }],
+        "UIApplicationSceneManifest": {"UIApplicationSupportsMultipleScenes": False},
         "LSRequiresIPhoneOS": True,
         "UIRequiredDeviceCapabilities": ["arm64"],
         "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],
@@ -95,6 +101,16 @@ def configure():
  rootObject = A00000000000000000000001;
 }
 '''
+    # Add the storefront route policy and its web navigation bridge.
+    project = project.replace('A00000000000000000000035); path = App;',
+                              'A00000000000000000000035, A00000000000000000000037, A00000000000000000000039); path = App;')
+    project = project.replace('A00000000000000000000036); runOnly', 'A00000000000000000000036, A00000000000000000000038); runOnly')
+    project = project.replace('A00000000000000000000034); runOnly', 'A00000000000000000000034, A00000000000000000000040); runOnly')
+    project = project.replace(' };\n rootObject', '''  A00000000000000000000037 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorefrontLink.swift; sourceTree = "<group>";};
+  A00000000000000000000038 = {isa = PBXBuildFile; fileRef = A00000000000000000000037;};
+  A00000000000000000000039 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = StorefrontLaunch.js; sourceTree = "<group>";};
+  A00000000000000000000040 = {isa = PBXBuildFile; fileRef = A00000000000000000000039;};
+ };\n rootObject''')
     project_dir = ROOT / "AccessHubTest.xcodeproj"
     scheme_dir = project_dir / "xcshareddata/xcschemes"
     scheme_dir.mkdir(parents=True, exist_ok=True)

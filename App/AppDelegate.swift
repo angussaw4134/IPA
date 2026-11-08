@@ -1,29 +1,40 @@
 import UIKit
 import WebKit
+import SwiftUI
 
 @main
-final class AppDelegate: UIResponder, UIApplicationDelegate {
-    var window: UIWindow?
+struct AccessHubTestApp: App {
+    @StateObject private var session = BrowserSession()
 
-    func application(_ application: UIApplication,
-                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        let window = UIWindow(frame: UIScreen.main.bounds)
-        window.overrideUserInterfaceStyle = .dark
-        window.rootViewController = BrowserViewController()
-        window.makeKeyAndVisible()
-        self.window = window
-        return true
+    var body: some Scene {
+        WindowGroup {
+            BrowserScreen(controller: session.controller)
+                .ignoresSafeArea()
+                .preferredColorScheme(.dark)
+                .onOpenURL { session.controller.receiveStorefrontURL($0) }
+                // UIKit notifications preserve the early privacy-cover timing, including
+                // temporary inactive states such as the native Face ID prompt.
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+                    session.controller.setPrivacyVisible(true)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didEnterBackgroundNotification)) { _ in
+                    session.controller.enteredBackground()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                    session.controller.becameActive()
+                }
+        }
     }
+}
 
-    func applicationWillResignActive(_ application: UIApplication) {
-        (window?.rootViewController as? BrowserViewController)?.setPrivacyVisible(true)
-    }
-    func applicationDidEnterBackground(_ application: UIApplication) {
-        (window?.rootViewController as? BrowserViewController)?.enteredBackground()
-    }
-    func applicationDidBecomeActive(_ application: UIApplication) {
-        (window?.rootViewController as? BrowserViewController)?.becameActive()
-    }
+private final class BrowserSession: ObservableObject {
+    let controller = BrowserViewController()
+}
+
+private struct BrowserScreen: UIViewControllerRepresentable {
+    let controller: BrowserViewController
+    func makeUIViewController(context: Context) -> BrowserViewController { controller }
+    func updateUIViewController(_ controller: BrowserViewController, context: Context) {}
 }
 
 final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
@@ -40,6 +51,34 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     private var motionReplies: [(WKPermissionDecision) -> Void] = []
     private var licenseVisible = false
     private var appInactive = false
+    private var pendingStorefrontHome = false
+    private var documentReady = false
+
+    func receiveStorefrontURL(_ url: URL) {
+        guard StorefrontLink.accepts(url) else { return }
+        pendingStorefrontHome = true
+        #if DEBUG
+        // Simulator smoke tests read this sandbox-only receipt. No customer data.
+        let defaults = UserDefaults.standard
+        let count = defaults.integer(forKey: "storefrontLaunchCount") + 1
+        defaults.set(count, forKey: "storefrontLaunchCount")
+        let receipt: [String: Any] = ["count": count, "pid": ProcessInfo.processInfo.processIdentifier]
+        if let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first,
+           let data = try? JSONSerialization.data(withJSONObject: receipt) {
+            try? data.write(to: folder.appendingPathComponent("storefront-launch.json"), options: .atomic)
+        }
+        #endif
+        deliverStorefrontHome()
+    }
+
+    private func deliverStorefrontHome() {
+        guard pendingStorefrontHome, documentReady, let webView = webView,
+              let url = webView.url, isWebsite(url),
+              UIApplication.shared.applicationState == .active else { return }
+        webView.evaluateJavaScript("window.StorefrontLaunch?.openHome() === true") { [weak self] value, error in
+            if error == nil, value as? Bool == true { self?.pendingStorefrontHome = false }
+        }
+    }
 
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
 
@@ -181,7 +220,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     private func installWebsiteScripts() {
         let controller = webView.configuration.userContentController
         controller.removeAllUserScripts()
-        for name in ["WebsiteState", "MainPagePreload", "NativeLogin"] {
+        for name in ["WebsiteState", "MainPagePreload", "NativeLogin", "StorefrontLaunch"] {
             guard let path = Bundle.main.url(forResource: name, withExtension: "js"),
                   let template = try? String(contentsOf: path, encoding: .utf8),
                   let script = name == "WebsiteState" ? websiteState.script(template: template) : template else { continue }
@@ -207,6 +246,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         setPrivacyVisible(false)
         security.becameActive()
         webView?.evaluateJavaScript("window.dispatchEvent(new Event('accesshub-native-foreground'))", completionHandler: nil)
+        deliverStorefrontHome()
     }
 
     private func openExternal(_ url: URL) {
@@ -294,7 +334,12 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     }
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        documentReady = false
         errorPanel.isHidden = true
+    }
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        documentReady = true
+        deliverStorefrontHome()
     }
     func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
         licenseVisible = false

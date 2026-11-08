@@ -39,8 +39,19 @@ jobs:
         run: |
           swiftc App/WebsiteStateVault.swift tests/website-vault.swift -o build/check-website-vault
           build/check-website-vault
+      - name: Check storefront URL policy
+        run: |
+          swiftc App/StorefrontLink.swift tests/storefront-link.swift -o build/check-storefront-link
+          build/check-storefront-link
       - name: Compile iPhone app and package IPA
         run: bash scripts/build-ipa.sh
+      - name: Test cold, warm and background URL delivery on iOS simulator
+        run: |
+          set -o pipefail
+          xcodebuild -project AccessHubTest.xcodeproj -scheme AccessHubTest \
+            -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build/Simulator CODE_SIGNING_ALLOWED=NO build > build/simulator-build.log 2>&1
+          python3 scripts/test-storefront-simulator.py
       - name: Downloadable SideStore app
         uses: actions/upload-artifact@v7
         with:
@@ -58,3 +69,14 @@ jobs:
           path: build/xcodebuild.log
           if-no-files-found: ignore
           retention-days: 7
+      - name: Simulator test evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Storefront-simulator-tests
+          path: |
+            build/storefront-simulator-results.json
+            build/storefront-simulator.png
+            build/simulator-build.log
+          if-no-files-found: ignore
+          retention-days: 14

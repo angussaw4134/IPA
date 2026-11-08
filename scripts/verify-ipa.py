@@ -12,6 +12,9 @@ with zipfile.ZipFile(path) as ipa:
     info = plistlib.loads(ipa.read(prefix + "Info.plist"))
     assert info["CFBundlePackageType"] == "APPL"
     assert info["CFBundleIdentifier"] == "dev.accesshub.sidestoretest"
+    schemes = [scheme for item in info.get("CFBundleURLTypes", []) for scheme in item.get("CFBundleURLSchemes", [])]
+    assert "storefrontdemo" in schemes, "Missing storefrontdemo URL registration in built app"
+    assert b"openHome" in ipa.read(prefix + "StorefrontLaunch.js"), "Missing storefront routing bridge"
     assert info["CFBundleSupportedPlatforms"] == ["iPhoneOS"], "Not a device build"
     binary = ipa.read(prefix + info["CFBundleExecutable"])
     assert len(binary) > 4096, "Missing executable"
@@ -24,4 +27,4 @@ with zipfile.ZipFile(path) as ipa:
     assert len(ipa.read(prefix + "MainPagePreload.js")) > 1000, "Missing page preloading and licence privacy bridge"
     assert len(ipa.read(prefix + "WebsiteState.js")) > 1000, "Missing settings recovery integration"
     assert ipa.read(prefix + "privacy-cover.png").startswith(b"\x89PNG\r\n\x1a\n"), "Missing privacy cover"
-print("Verified device IPA, arm64 executable, website configuration, Face ID declaration and bundled login/privacy resources.")
+print("Verified device IPA, arm64 executable, storefrontdemo URL registration, website configuration, Face ID declaration and bundled login/privacy resources.")

@@ -14,6 +14,25 @@ No Apple password, signing certificate, website admin PIN or Cloudflare credenti
 
 ## What to test
 
+### Open from the separate storefront
+
+The receiving app registers **`storefrontdemo://open`**. The storefront link stays unchanged. SwiftUI's `.onOpenURL` validates the scheme and `open` host and sends a Home navigation intent to the existing browser screen. Cold launches queue that intent until the website is ready; running and backgrounded launches reuse the existing browser. If locked or unactivated, normal key/PIN/Face ID login is still required, then the existing login flow opens Home. URLs cannot supply credentials, arbitrary destinations or bypass authentication.
+
+**Uninstall “Launcher Demo” before installing this app** because it registers the same scheme. iOS does not guarantee which app receives a URL when multiple installed apps claim it. Keep the separate storefront installed. When updating this receiving app, install over its existing copy with the same signing account; do not delete it if you want to preserve settings. Its bundle ID remains `dev.accesshub.sidestoretest`, distinct from storefront `com.example.NativeStorefront`. Do not let the signing tool rename this app to the storefront bundle ID or remove its URL registration.
+
+The macOS Actions workflow builds an unsigned arm64 **device** IPA, inspects its final Info.plist for `CFBundleURLTypes` → `CFBundleURLSchemes` → `storefrontdemo`, and runs a separate **simulator** build to exercise cold, already-running, background and terminated-process URL delivery. JavaScript tests separately check Home routing and that locked/revoked sessions cannot be unlocked by the URL. The simulator's diagnostic receipt exists only in Debug builds; the released IPA does not include it. No App Store publishing or Apple signing credentials are used.
+
+After signing and installing on your iPhone:
+
+1. Sign into the receiving app normally. Open a page other than Home.
+2. Return to the storefront and use its existing Open button. The receiving app should appear on Home.
+3. Force-close the receiving app, then use the same storefront button. Complete login if prompted; Home should open.
+4. With the receiver already active, open `storefrontdemo://open` using an iOS Shortcuts **Open URLs** action; check Home opens without a new browser or extra toolbar.
+5. Repeat while locked and with invalid/revoked access: normal authentication must still be enforced.
+6. Recheck safe areas, Face ID, preserved settings, and licence-only app-switcher privacy on the physical device after the SwiftUI lifecycle change.
+
+Simulator URL delivery is not a substitute for these real-iPhone checks or confirmation that your signing tool preserves Info.plist. The integration follows [Apple’s SwiftUI URL handling documentation](https://developer.apple.com/documentation/swiftui/view/onopenurl%28perform%3A%29).
+
 - Open the app with 3377test's existing home-screen name and icon, enter a valid unused key and complete the usual website login.
 - Close and reopen: website cookies and local storage should remain. Safari's existing login is separate and will not be copied. A fresh activation is subject to the server's user cap and key rules.
 - Choose an iPhone photo and save it through the website's normal upload flow.

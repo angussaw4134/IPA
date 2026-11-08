@@ -22,5 +22,6 @@ with zipfile.ZipFile(path) as ipa:
     assert info.get("NSFaceIDUsageDescription"), "Missing Face ID permission description"
     assert len(ipa.read(prefix + "NativeLogin.js")) > 1000, "Missing native login integration"
     assert len(ipa.read(prefix + "MainPagePreload.js")) > 1000, "Missing page preloading and licence privacy bridge"
+    assert len(ipa.read(prefix + "WebsiteState.js")) > 1000, "Missing settings recovery integration"
     assert ipa.read(prefix + "privacy-cover.png").startswith(b"\x89PNG\r\n\x1a\n"), "Missing privacy cover"
 print("Verified device IPA, arm64 executable, website configuration, Face ID declaration and bundled login/privacy resources.")

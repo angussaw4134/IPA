@@ -33,6 +33,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     private let errorMessage = UILabel()
     private lazy var security = NativeSecurity(origin: startURL)
     private lazy var accessPolicy = NativeAccessPolicy(origin: startURL)
+    private lazy var websiteState = WebsiteStateVault(origin: startURL)
     private let privacyCover = UIImageView(image: UIImage(named: "privacy-cover.png"))
     private var nativeReady = false
     private var preparingNative = false
@@ -51,13 +52,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         configuration.userContentController.addScriptMessageHandler(security, contentWorld: .page, name: "nativeSecurity")
         configuration.userContentController.add(self, name: "openurl")
         configuration.userContentController.add(self, name: "privacyState")
-        for name in ["MainPagePreload", "NativeLogin"] {
-            if let path = Bundle.main.url(forResource: name, withExtension: "js"),
-               let script = try? String(contentsOf: path, encoding: .utf8) {
-                configuration.userContentController.addUserScript(WKUserScript(source: script,
-                    injectionTime: .atDocumentStart, forMainFrameOnly: true))
-            }
-        }
+        configuration.userContentController.add(self, name: "websiteState")
         webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = self
         webView.uiDelegate = self
@@ -183,6 +178,17 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         accessPolicy.isWebsite(url)
     }
 
+    private func installWebsiteScripts() {
+        let controller = webView.configuration.userContentController
+        controller.removeAllUserScripts()
+        for name in ["WebsiteState", "MainPagePreload", "NativeLogin"] {
+            guard let path = Bundle.main.url(forResource: name, withExtension: "js"),
+                  let template = try? String(contentsOf: path, encoding: .utf8),
+                  let script = name == "WebsiteState" ? websiteState.script(template: template) : template else { continue }
+            controller.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
+    }
+
     func setPrivacyVisible(_ inactive: Bool) {
         guard isViewLoaded else { return }
         appInactive = inactive
@@ -193,6 +199,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     }
     func enteredBackground() {
         setPrivacyVisible(true)
+        websiteState.flush()
         security.cancel()
         webView?.evaluateJavaScript("window.dispatchEvent(new Event('accesshub-native-background'))", completionHandler: nil)
     }
@@ -208,6 +215,10 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         guard security.trusts(message.frameInfo) else { return }
+        if message.name == "websiteState" {
+            websiteState.accept(message.body)
+            return
+        }
         if message.name == "privacyState", let visible = message.body as? Bool {
             licenseVisible = visible
             setPrivacyVisible(appInactive)
@@ -233,7 +244,11 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
             if navigationAction.targetFrame == nil {
                 decisionHandler(.cancel)
                 webView.load(navigationAction.request)
-            } else { decisionHandler(.allow) }
+            } else {
+                // Each full navigation uses the latest copy, never an old launch snapshot.
+                installWebsiteScripts()
+                decisionHandler(.allow)
+            }
             return
         }
         decisionHandler(.cancel)

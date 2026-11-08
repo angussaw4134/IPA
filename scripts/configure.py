@@ -57,7 +57,7 @@ def configure():
  objects = {
   A00000000000000000000001 = {isa = PBXProject; attributes = {LastUpgradeCheck = 1600;}; buildConfigurationList = A00000000000000000000010; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = A00000000000000000000002; productRefGroup = A00000000000000000000004; projectDirPath = ""; projectRoot = ""; targets = (A00000000000000000000005);};
   A00000000000000000000002 = {isa = PBXGroup; children = (A00000000000000000000003, A00000000000000000000004); sourceTree = "<group>";};
-  A00000000000000000000003 = {isa = PBXGroup; children = (A00000000000000000000006, A00000000000000000000007, A00000000000000000000008, A00000000000000000000021, A00000000000000000000022, A00000000000000000000023, A00000000000000000000027, A00000000000000000000029, A00000000000000000000031); path = App; sourceTree = "<group>";};
+  A00000000000000000000003 = {isa = PBXGroup; children = (A00000000000000000000006, A00000000000000000000007, A00000000000000000000008, A00000000000000000000021, A00000000000000000000022, A00000000000000000000023, A00000000000000000000027, A00000000000000000000029, A00000000000000000000031, A00000000000000000000033, A00000000000000000000035); path = App; sourceTree = "<group>";};
   A00000000000000000000004 = {isa = PBXGroup; children = (A00000000000000000000009); name = Products; sourceTree = "<group>";};
   A00000000000000000000005 = {isa = PBXNativeTarget; buildConfigurationList = A00000000000000000000011; buildPhases = (A00000000000000000000012, A00000000000000000000013, A00000000000000000000014); buildRules = (); dependencies = (); name = AccessHubTest; productName = AccessHubTest; productReference = A00000000000000000000009; productType = "com.apple.product-type.application";};
   A00000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>";};
@@ -66,9 +66,9 @@ def configure():
   A00000000000000000000009 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AccessHubTest.app; sourceTree = BUILT_PRODUCTS_DIR;};
   A00000000000000000000010 = {isa = XCConfigurationList; buildConfigurations = (A00000000000000000000017, A00000000000000000000018); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
   A00000000000000000000011 = {isa = XCConfigurationList; buildConfigurations = (A00000000000000000000019, A00000000000000000000020); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
-  A00000000000000000000012 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000015, A00000000000000000000024, A00000000000000000000028, A00000000000000000000032); runOnlyForDeploymentPostprocessing = 0;};
+  A00000000000000000000012 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000015, A00000000000000000000024, A00000000000000000000028, A00000000000000000000032, A00000000000000000000036); runOnlyForDeploymentPostprocessing = 0;};
   A00000000000000000000013 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
-  A00000000000000000000014 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000016, A00000000000000000000025, A00000000000000000000026, A00000000000000000000030); runOnlyForDeploymentPostprocessing = 0;};
+  A00000000000000000000014 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000016, A00000000000000000000025, A00000000000000000000026, A00000000000000000000030, A00000000000000000000034); runOnlyForDeploymentPostprocessing = 0;};
   A00000000000000000000015 = {isa = PBXBuildFile; fileRef = A00000000000000000000006;};
   A00000000000000000000016 = {isa = PBXBuildFile; fileRef = A00000000000000000000008;};
   A00000000000000000000017 = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 16.0; SWIFT_VERSION = 5.0; SWIFT_OPTIMIZATION_LEVEL = "-Onone";}; name = Debug;};
@@ -87,6 +87,10 @@ def configure():
   A00000000000000000000030 = {isa = PBXBuildFile; fileRef = A00000000000000000000029;};
   A00000000000000000000031 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeAccessPolicy.swift; sourceTree = "<group>";};
   A00000000000000000000032 = {isa = PBXBuildFile; fileRef = A00000000000000000000031;};
+  A00000000000000000000033 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = WebsiteState.js; sourceTree = "<group>";};
+  A00000000000000000000034 = {isa = PBXBuildFile; fileRef = A00000000000000000000033;};
+  A00000000000000000000035 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebsiteStateVault.swift; sourceTree = "<group>";};
+  A00000000000000000000036 = {isa = PBXBuildFile; fileRef = A00000000000000000000035;};
  };
  rootObject = A00000000000000000000001;
 }

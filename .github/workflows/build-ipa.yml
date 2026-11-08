@@ -24,6 +24,8 @@ jobs:
       - uses: actions/checkout@v6
       - name: Check build configuration
         run: python3 -m unittest discover -s tests -v
+      - name: Check native login integration
+        run: node --test tests/native-login.mjs
       - name: Compile iPhone app and package IPA
         run: bash scripts/build-ipa.sh
       - name: Downloadable SideStore app

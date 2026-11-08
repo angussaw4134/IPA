@@ -14,13 +14,28 @@ final class AppDelegate: UIResponder, UIApplicationDelegate {
         self.window = window
         return true
     }
+
+    func applicationWillResignActive(_ application: UIApplication) {
+        (window?.rootViewController as? BrowserViewController)?.setPrivacyVisible(true)
+    }
+    func applicationDidEnterBackground(_ application: UIApplication) {
+        (window?.rootViewController as? BrowserViewController)?.enteredBackground()
+    }
+    func applicationDidBecomeActive(_ application: UIApplication) {
+        (window?.rootViewController as? BrowserViewController)?.becameActive()
+    }
 }
 
-final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUIDelegate {
+final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUIDelegate, WKScriptMessageHandler {
     private let startURL = URL(string: Bundle.main.object(forInfoDictionaryKey: "TestWebsiteURL") as! String)!
     private var webView: WKWebView!
     private let errorPanel = UIStackView()
     private let errorMessage = UILabel()
+    private lazy var security = NativeSecurity(origin: startURL)
+    private let privacyCover = UIImageView(image: UIImage(named: "privacy-cover.png"))
+    private var nativeReady = false
+    private var preparingNative = false
+    private var motionReplies: [(WKPermissionDecision) -> Void] = []
 
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
 
@@ -30,7 +45,13 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         let configuration = WKWebViewConfiguration()
         configuration.websiteDataStore = .default()
         configuration.allowsInlineMediaPlayback = true
-        // No access tokens, admin PINs, or native authentication bypasses are bundled.
+        configuration.userContentController.addScriptMessageHandler(security, contentWorld: .page, name: "nativeSecurity")
+        configuration.userContentController.add(self, name: "openurl")
+        if let path = Bundle.main.url(forResource: "NativeLogin", withExtension: "js"),
+           let script = try? String(contentsOf: path, encoding: .utf8) {
+            configuration.userContentController.addUserScript(WKUserScript(source: script,
+                injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        }
         webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = self
         webView.uiDelegate = self
@@ -43,7 +64,8 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         view.addSubview(webView)
 
         NSLayoutConstraint.activate([
-            webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            // The website already handles env(safe-area-inset-top). Do not add it twice.
+            webView.topAnchor.constraint(equalTo: view.topAnchor),
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             webView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -74,6 +96,21 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         ])
         errorPanel.isHidden = true
 
+        privacyCover.backgroundColor = UIColor(white: 0.07, alpha: 1)
+        privacyCover.contentMode = .scaleAspectFit
+        privacyCover.isUserInteractionEnabled = true
+        privacyCover.accessibilityLabel = "App content hidden"
+        privacyCover.isAccessibilityElement = true
+        privacyCover.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(privacyCover)
+        NSLayoutConstraint.activate([
+            privacyCover.topAnchor.constraint(equalTo: view.topAnchor),
+            privacyCover.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            privacyCover.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            privacyCover.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
+        privacyCover.isHidden = UIApplication.shared.applicationState == .active
+
         // A native label stays visible on every page, without covering touch targets.
         let demo = UILabel()
         demo.text = "Testing Phase Demo build"
@@ -97,14 +134,76 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         goHome()
     }
 
-    @objc private func goHome() { webView.load(URLRequest(url: startURL)) }
+    @objc private func goHome() {
+        guard nativeReady else { prepareNativeLogin(); return }
+        webView.load(URLRequest(url: startURL))
+    }
+    private func prepareNativeLogin() {
+        guard !preparingNative else { return }
+        preparingNative = true
+        // The wrapper owns biometric login and lifecycle privacy. Avoid two controllers
+        // reacting to the same buttons or treating the Face ID sheet as app backgrounding.
+        let prefix = NSRegularExpression.escapedPattern(for: startURL.absoluteString)
+        let rules: [[String: Any]] = [["trigger": ["url-filter": "^" + prefix + "(login-ui|app-privacy)\\.js([?].*)?$",
+                                                   "resource-type": ["script"]],
+                                      "action": ["type": "block"]]]
+        guard Bundle.main.url(forResource: "NativeLogin", withExtension: "js") != nil,
+              let data = try? JSONSerialization.data(withJSONObject: rules),
+              let json = String(data: data, encoding: .utf8) else {
+            preparingNative = false
+            errorMessage.text = "This build is missing its login files. Reinstall the latest test build."
+            errorPanel.isHidden = false
+            return
+        }
+        WKContentRuleListStore.default().compileContentRuleList(forIdentifier: "native-test-login",
+            encodedContentRuleList: json) { [weak self] list, error in
+                guard let self = self else { return }
+                self.preparingNative = false
+                guard let list = list, error == nil else {
+                    self.errorMessage.text = "Could not prepare the test app. Tap Try again."
+                    self.errorPanel.isHidden = false
+                    return
+                }
+                self.webView.configuration.userContentController.add(list)
+                self.nativeReady = true
+                self.goHome()
+            }
+    }
     @objc private func retry() {
         errorPanel.isHidden = true
         if webView.url != nil { webView.reload() } else { goHome() }
     }
 
     private func isWebsite(_ url: URL) -> Bool {
-        url.scheme == "https" && url.host == startURL.host && url.port == startURL.port
+        url.scheme == "https" && url.host == startURL.host && (url.port ?? 443) == (startURL.port ?? 443)
+    }
+
+    func setPrivacyVisible(_ visible: Bool) {
+        guard isViewLoaded else { return }
+        privacyCover.isHidden = !visible
+        webView.accessibilityElementsHidden = visible
+        view.layoutIfNeeded()
+    }
+    func enteredBackground() {
+        setPrivacyVisible(true)
+        security.cancel()
+        webView?.evaluateJavaScript("window.dispatchEvent(new Event('accesshub-native-background'))", completionHandler: nil)
+    }
+    func becameActive() {
+        setPrivacyVisible(false)
+        security.becameActive()
+    }
+
+    private func openExternal(_ url: URL) {
+        guard ["https", "http", "mailto", "tel"].contains(url.scheme?.lowercased() ?? "") else { return }
+        UIApplication.shared.open(url, options: [:], completionHandler: nil)
+    }
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard message.name == "openurl", security.trusts(message.frameInfo),
+              let value = message.body as? String,
+              let url = URL(string: value, relativeTo: startURL)?.absoluteURL else { return }
+        if isWebsite(url) { webView.load(URLRequest(url: url)) }
+        else { openExternal(url) }
     }
 
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction,
@@ -122,11 +221,45 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
             return
         }
         decisionHandler(.cancel)
-        // Only user-selected, standard external links may leave the app.
-        if navigationAction.navigationType == .linkActivated,
-           ["https", "mailto", "tel"].contains(url.scheme ?? "") {
-            UIApplication.shared.open(url, options: [:], completionHandler: nil)
+        if security.trusts(navigationAction.sourceFrame),
+           navigationAction.navigationType == .linkActivated || navigationAction.targetFrame == nil {
+            openExternal(url)
         }
+    }
+
+    func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
+                 for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+        guard navigationAction.targetFrame == nil, security.trusts(navigationAction.sourceFrame),
+              let url = navigationAction.request.url else { return nil }
+        if isWebsite(url) { webView.load(navigationAction.request) }
+        else { openExternal(url) }
+        return nil
+    }
+
+    func webView(_ webView: WKWebView, requestDeviceOrientationAndMotionPermissionFor origin: WKSecurityOrigin,
+                 initiatedByFrame frame: WKFrameInfo, decisionHandler: @escaping (WKPermissionDecision) -> Void) {
+        guard origin.protocol == "https", origin.host == startURL.host, [0, 443].contains(origin.port),
+              security.trusts(frame) else { decisionHandler(.deny); return }
+        let key = "motion-permission:" + startURL.absoluteString
+        if let allowed = UserDefaults.standard.object(forKey: key) as? Bool {
+            decisionHandler(allowed ? .grant : .deny); return
+        }
+        if !motionReplies.isEmpty { motionReplies.append(decisionHandler); return }
+        guard presentedViewController == nil, UIApplication.shared.applicationState == .active else {
+            decisionHandler(.deny); return
+        }
+        motionReplies.append(decisionHandler)
+        let alert = UIAlertController(title: "Allow motion effects?",
+            message: "Let this test website use device motion and orientation for tilt effects. Your choice is remembered on this device.", preferredStyle: .alert)
+        func choose(_ allowed: Bool) {
+            UserDefaults.standard.set(allowed, forKey: key)
+            let replies = self.motionReplies
+            self.motionReplies.removeAll()
+            replies.forEach { $0(allowed ? .grant : .deny) }
+        }
+        alert.addAction(UIAlertAction(title: "Don’t Allow", style: .cancel) { _ in choose(false) })
+        alert.addAction(UIAlertAction(title: "Allow", style: .default) { _ in choose(true) })
+        present(alert, animated: true)
     }
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {

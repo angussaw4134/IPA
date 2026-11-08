@@ -19,4 +19,7 @@ with zipfile.ZipFile(path) as ipa:
     magic, cpu = struct.unpack_from("<II", binary)
     assert magic == 0xFEEDFACF and cpu == 0x0100000C, "Expected arm64 Mach-O"
     assert info["TestWebsiteURL"].startswith("https://")
-print("Verified device IPA structure, arm64 executable and website configuration.")
+    assert info.get("NSFaceIDUsageDescription"), "Missing Face ID permission description"
+    assert len(ipa.read(prefix + "NativeLogin.js")) > 1000, "Missing native login integration"
+    assert ipa.read(prefix + "privacy-cover.png").startswith(b"\x89PNG\r\n\x1a\n"), "Missing privacy cover"
+print("Verified device IPA, arm64 executable, website configuration, Face ID declaration and bundled login/privacy resources.")

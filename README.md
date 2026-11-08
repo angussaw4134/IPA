@@ -20,9 +20,15 @@ No Apple password, signing certificate, website admin PIN or Cloudflare credenti
 - Check scrolling, the safe area, keyboard, refresh and the existing server-full / revoked-key behavior.
 - Turn off networking and reload: a retry message should appear. Reconnect and select Try again.
 
-This build requires iOS 16 or newer. The website still needs a working internet connection. There is no native toolbar: the website starts directly below the iPhone status area. External user-selected HTTPS links open outside the app. Server authentication, keys, user caps, billing and admin features remain on the existing server.
+This build requires iOS 16 or newer. The website still needs a working internet connection. There is no native toolbar or extra top inset: the website handles the iPhone safe area itself. External links, including the website's JavaScript link buttons, open outside the app. Server authentication, keys, user caps, billing and admin features remain on the existing server.
 
-**Face ID/passkeys:** this build does not add native Face ID or associated-domain entitlements. Use the website's key/PIN login for initial testing. Existing Safari passkeys are not guaranteed to work inside this wrapper; that requires a separate associated-domain and signing configuration. Photo selection uses WKWebView's system picker; there is no custom upload bridge or bypass.
+**Face ID:** enter a valid key, tap Set up Face ID, then enter the website PIN. Apple handles the biometric prompt. Enrollment is stored in this installation's Keychain, tied to the key, website and current biometric enrollment. Returning users can unlock with Face ID (or Touch ID on supported devices); the server is checked before and after authentication, so a deleted, banned or expired key does not regain access. PIN remains the fallback. Use the existing signature settings toggle to disable Face ID. Safari passkeys are separate and are not imported or simulated.
+
+**Motion:** the first motion request offers Allow / Don't Allow. The wrapper remembers either choice for that website on this installation. Changing websites or reinstalling can require a new choice.
+
+**Privacy:** a local opaque cover is shown when iOS reports the app becoming inactive, and remains through backgrounding. It is removed on return to the foreground. Actual backgrounding cancels pending login, while the Face ID system prompt does not cancel itself. Test app-switcher snapshots on a real iPhone; the cover cannot prevent screenshots taken while the app is active or replace iOS lifecycle timing. The permanent demo label stays visible over the cover.
+
+Photo selection uses WKWebView's system picker; there is no custom upload bridge or bypass. After installing an update, test Face ID cancellation, key revocation, returning from the app switcher, motion on repeated visits, and both regular links and buttons that open a new window.
 
 ## Build locally on a Mac
 

@@ -24,6 +24,8 @@
 	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Take a photo to upload to your test profile.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Use Face ID to unlock this test app after signing in with your key and PIN.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Choose a photo to upload to your test profile.</string>
 	<key>TestWebsiteURL</key>

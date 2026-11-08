@@ -143,13 +143,8 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         preparingNative = true
         // The wrapper owns biometric login and lifecycle privacy. Avoid two controllers
         // reacting to the same buttons or treating the Face ID sheet as app backgrounding.
-        let prefix = NSRegularExpression.escapedPattern(for: startURL.absoluteString)
-        let rules: [[String: Any]] = [["trigger": ["url-filter": "^" + prefix + "(login-ui|app-privacy)\\.js([?].*)?$",
-                                                   "resource-type": ["script"]],
-                                      "action": ["type": "block"]]]
         guard Bundle.main.url(forResource: "NativeLogin", withExtension: "js") != nil,
-              let data = try? JSONSerialization.data(withJSONObject: rules),
-              let json = String(data: data, encoding: .utf8) else {
+              let json = try? NativeContentRules.json(for: startURL) else {
             preparingNative = false
             errorMessage.text = "This build is missing its login files. Reinstall the latest test build."
             errorPanel.isHidden = false
@@ -160,7 +155,9 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
                 guard let self = self else { return }
                 self.preparingNative = false
                 guard let list = list, error == nil else {
-                    self.errorMessage.text = "Could not prepare the test app. Tap Try again."
+                    let detail = error as NSError?
+                    NSLog("Native startup rule error: %@", detail?.description ?? "No compiled rule list returned")
+                    self.errorMessage.text = "Could not prepare the test app (\(detail?.code ?? -1)). Tap Try again."
                     self.errorPanel.isHidden = false
                     return
                 }

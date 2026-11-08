@@ -57,7 +57,7 @@ def configure():
  objects = {
   A00000000000000000000001 = {isa = PBXProject; attributes = {LastUpgradeCheck = 1600;}; buildConfigurationList = A00000000000000000000010; compatibilityVersion = "Xcode 14.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = A00000000000000000000002; productRefGroup = A00000000000000000000004; projectDirPath = ""; projectRoot = ""; targets = (A00000000000000000000005);};
   A00000000000000000000002 = {isa = PBXGroup; children = (A00000000000000000000003, A00000000000000000000004); sourceTree = "<group>";};
-  A00000000000000000000003 = {isa = PBXGroup; children = (A00000000000000000000006, A00000000000000000000007, A00000000000000000000008, A00000000000000000000021, A00000000000000000000022, A00000000000000000000023); path = App; sourceTree = "<group>";};
+  A00000000000000000000003 = {isa = PBXGroup; children = (A00000000000000000000006, A00000000000000000000007, A00000000000000000000008, A00000000000000000000021, A00000000000000000000022, A00000000000000000000023, A00000000000000000000027); path = App; sourceTree = "<group>";};
   A00000000000000000000004 = {isa = PBXGroup; children = (A00000000000000000000009); name = Products; sourceTree = "<group>";};
   A00000000000000000000005 = {isa = PBXNativeTarget; buildConfigurationList = A00000000000000000000011; buildPhases = (A00000000000000000000012, A00000000000000000000013, A00000000000000000000014); buildRules = (); dependencies = (); name = AccessHubTest; productName = AccessHubTest; productReference = A00000000000000000000009; productType = "com.apple.product-type.application";};
   A00000000000000000000006 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>";};
@@ -66,7 +66,7 @@ def configure():
   A00000000000000000000009 = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AccessHubTest.app; sourceTree = BUILT_PRODUCTS_DIR;};
   A00000000000000000000010 = {isa = XCConfigurationList; buildConfigurations = (A00000000000000000000017, A00000000000000000000018); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
   A00000000000000000000011 = {isa = XCConfigurationList; buildConfigurations = (A00000000000000000000019, A00000000000000000000020); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
-  A00000000000000000000012 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000015, A00000000000000000000024); runOnlyForDeploymentPostprocessing = 0;};
+  A00000000000000000000012 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000015, A00000000000000000000024, A00000000000000000000028); runOnlyForDeploymentPostprocessing = 0;};
   A00000000000000000000013 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
   A00000000000000000000014 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000016, A00000000000000000000025, A00000000000000000000026); runOnlyForDeploymentPostprocessing = 0;};
   A00000000000000000000015 = {isa = PBXBuildFile; fileRef = A00000000000000000000006;};
@@ -81,6 +81,8 @@ def configure():
   A00000000000000000000024 = {isa = PBXBuildFile; fileRef = A00000000000000000000021;};
   A00000000000000000000025 = {isa = PBXBuildFile; fileRef = A00000000000000000000022;};
   A00000000000000000000026 = {isa = PBXBuildFile; fileRef = A00000000000000000000023;};
+  A00000000000000000000027 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeContentRules.swift; sourceTree = "<group>";};
+  A00000000000000000000028 = {isa = PBXBuildFile; fileRef = A00000000000000000000027;};
  };
  rootObject = A00000000000000000000001;
 }

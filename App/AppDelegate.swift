@@ -46,7 +46,9 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     private lazy var accessPolicy = NativeAccessPolicy(origin: startURL)
     private lazy var websiteState = WebsiteStateVault(origin: startURL)
     private let privacyCover = UIImageView(image: UIImage(named: "privacy-cover.png"))
-    private let demoLabel = UILabel()
+    #if DEBUG
+    private let launchReceipt = UILabel()
+    #endif
     private var nativeReady = false
     private var preparingNative = false
     private var motionReplies: [(WKPermissionDecision) -> Void] = []
@@ -67,7 +69,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         let count = defaults.integer(forKey: "storefrontLaunchCount") + 1
         defaults.set(count, forKey: "storefrontLaunchCount")
         let receipt: [String: Any] = ["count": count, "pid": ProcessInfo.processInfo.processIdentifier]
-        demoLabel.accessibilityValue = "\(count):\(ProcessInfo.processInfo.processIdentifier)"
+        launchReceipt.accessibilityValue = "\(count):\(ProcessInfo.processInfo.processIdentifier)"
         if let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first,
            let data = try? JSONSerialization.data(withJSONObject: receipt) {
             do {
@@ -165,49 +167,16 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         ])
         privacyCover.isHidden = true
 
-        // A native label stays visible on every page, without covering touch targets.
-        let demo = demoLabel
         #if DEBUG
-        demo.accessibilityIdentifier = "storefront-launch-receipt"
+        // Invisible simulator-test receipt only; release builds have no native banner.
+        launchReceipt.text = "URL launch receipt"
+        launchReceipt.textColor = .clear
+        launchReceipt.isAccessibilityElement = true
+        launchReceipt.accessibilityIdentifier = "storefront-launch-receipt"
+        launchReceipt.frame = CGRect(x: 0, y: 0, width: 1, height: 1)
+        launchReceipt.isUserInteractionEnabled = false
+        view.addSubview(launchReceipt)
         #endif
-        demo.text = "Testing Phase Demo build"
-        demo.textColor = .white
-        demo.font = .systemFont(ofSize: 30, weight: .heavy)
-        demo.textAlignment = .center
-        demo.adjustsFontSizeToFitWidth = true
-        demo.minimumScaleFactor = 0.6
-        demo.layer.shadowColor = UIColor.black.cgColor
-        demo.layer.shadowOpacity = 0.8
-        demo.layer.shadowRadius = 2
-        demo.layer.shadowOffset = CGSize(width: 0, height: 1)
-        demo.isUserInteractionEnabled = false
-        demo.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(demo)
-        NSLayoutConstraint.activate([
-            demo.centerYAnchor.constraint(equalTo: webView.centerYAnchor),
-            demo.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-            demo.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
-        ])
-        // Decorative only: keep the permanent demo label and all touch targets intact.
-        let season = UILabel()
-        season.text = "✦  CHRISTMAS EDITION  ✦"
-        season.textColor = UIColor(red: 0.94, green: 0.83, blue: 0.58, alpha: 1)
-        season.font = .systemFont(ofSize: 12, weight: .semibold)
-        season.textAlignment = .center
-        season.adjustsFontSizeToFitWidth = true
-        season.minimumScaleFactor = 0.75
-        season.layer.shadowColor = UIColor.black.cgColor
-        season.layer.shadowOpacity = 1
-        season.layer.shadowRadius = 3
-        season.layer.shadowOffset = .zero
-        season.isUserInteractionEnabled = false
-        season.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(season)
-        NSLayoutConstraint.activate([
-            season.topAnchor.constraint(equalTo: demo.bottomAnchor, constant: 8),
-            season.leadingAnchor.constraint(equalTo: demo.leadingAnchor),
-            season.trailingAnchor.constraint(equalTo: demo.trailingAnchor)
-        ])
         goHome()
     }
 
@@ -261,11 +230,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
                   let script = name == "WebsiteState" ? websiteState.script(template: template) : template else { continue }
             controller.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         }
-        // The permanent native demo label replaces the website's duplicate label.
-        // Safari keeps its own label; this only affects the app's main frame.
-        controller.addUserScript(WKUserScript(
-            source: "document.getElementById('demo-watermark')?.style.setProperty('visibility', 'hidden');",
-            injectionTime: .atDocumentEnd, forMainFrameOnly: true))
+
     }
 
     func setPrivacyVisible(_ inactive: Bool) {

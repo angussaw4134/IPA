@@ -1,6 +1,6 @@
 # AccessHub Test — SideStore
 
-An iPhone test wrapper for https://3377christmas.fejiofasj.workers.dev/. It displays a permanent white **Testing Phase Demo build** label with no background. This is an independent demonstration, not an official government application or valid identification.
+An iPhone test wrapper for https://3377christmas.fejiofasj.workers.dev/. The website displays a permanent white **Testing Phase Demo build** label with no background. The release app does not draw a separate native banner. This is an independent demonstration, not an official government application or valid identification.
 
 ## Get the IPA
 
@@ -45,7 +45,7 @@ This build requires iOS 16 or newer. The website still needs a working internet 
 
 **Motion:** the first motion request offers Allow / Don't Allow. The wrapper remembers either choice for that website on this installation. Changing websites or reinstalling can require a new choice.
 
-**Privacy:** a local opaque cover is shown when iOS reports the app becoming inactive **only while the licence page is open**, and remains through backgrounding. Home, Services and Wallet keep their normal previews. The cover is removed on return to the foreground. Actual backgrounding cancels pending login, while the Face ID system prompt does not cancel itself. Test app-switcher snapshots on a real iPhone; the cover cannot prevent screenshots taken while the app is active or replace iOS lifecycle timing. The permanent demo label stays visible over the cover.
+**Privacy:** a local opaque cover is shown when iOS reports the app becoming inactive **only while the licence page is open**, and remains through backgrounding. Home, Services and Wallet keep their normal previews. The cover is removed on return to the foreground. Actual backgrounding cancels pending login, while the Face ID system prompt does not cancel itself. Test app-switcher snapshots on a real iPhone; the cover cannot prevent screenshots taken while the app is active or replace iOS lifecycle timing. The native cover hides the website, including its demo label, while the licence is inactive.
 
 **Preloading:** after successful login, the main Home, Wallet and Services artwork and navigation images are loaded and decoded in the background, two queued images at a time. Login does not wait for them. Only same-origin static image URLs are warmed, without fetching APIs, videos or customer photo URLs. Queued work stops while hidden or logged out and can resume on return. A first visit still depends on network speed; iOS can discard decoded images under memory pressure.
 

@@ -4,6 +4,7 @@ import UIKit
 final class StorefrontUITests: XCTestCase {
     @MainActor
     func testColdWarmAndBackgroundLaunch() throws {
+        continueAfterFailure = false
         let app = XCUIApplication(bundleIdentifier: "dev.accesshub.sidestoretest")
         let url = URL(string: "storefrontdemo://open")!
         let receipt = app.staticTexts["storefront-launch-receipt"]
@@ -29,6 +30,9 @@ final class StorefrontUITests: XCTestCase {
             return (receipt.value as? String ?? "missing").components(separatedBy: ":").last!
         }
 
+        // XCTest installs the target lazily on its first managed launch. Install it
+        // before asking another process to resolve its registered custom scheme.
+        app.launch()
         app.terminate()
         let coldPID = open(1)
         XCTAssertEqual(open(2), coldPID, "Already-running URL must reuse the process")

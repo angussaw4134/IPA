@@ -20,7 +20,7 @@ No Apple password, signing certificate, website admin PIN or Cloudflare credenti
 - Check scrolling, the safe area, keyboard, refresh and the existing server-full / revoked-key behavior.
 - Turn off networking and reload: a retry message should appear. Reconnect and select Try again.
 
-This build requires iOS 16 or newer. The website still needs a working internet connection. The small native toolbar has Home and Reload controls. External user-selected HTTPS links open outside the app. Server authentication, keys, user caps, billing and admin features remain on the existing server.
+This build requires iOS 16 or newer. The website still needs a working internet connection. There is no native toolbar: the website starts directly below the iPhone status area. External user-selected HTTPS links open outside the app. Server authentication, keys, user caps, billing and admin features remain on the existing server.
 
 **Face ID/passkeys:** this build does not add native Face ID or associated-domain entitlements. Use the website's key/PIN login for initial testing. Existing Safari passkeys are not guaranteed to work inside this wrapper; that requires a separate associated-domain and signing configuration. Photo selection uses WKWebView's system picker; there is no custom upload bridge or bypass.
 

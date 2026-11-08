@@ -21,7 +21,6 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     private var webView: WKWebView!
     private let errorPanel = UIStackView()
     private let errorMessage = UILabel()
-    private let spinner = UIActivityIndicatorView(style: .medium)
 
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
 
@@ -43,34 +42,8 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
 
-        let toolbar = UIStackView()
-        toolbar.axis = .horizontal
-        toolbar.spacing = 14
-        toolbar.alignment = .center
-        toolbar.translatesAutoresizingMaskIntoConstraints = false
-        let title = UILabel()
-        title.text = "AccessHub Test"
-        title.font = .systemFont(ofSize: 13, weight: .semibold)
-        title.textColor = .secondaryLabel
-        let home = UIButton(type: .system)
-        home.setImage(UIImage(systemName: "house"), for: .normal)
-        home.accessibilityLabel = "Open website home"
-        home.addTarget(self, action: #selector(goHome), for: .touchUpInside)
-        let reload = UIButton(type: .system)
-        reload.setImage(UIImage(systemName: "arrow.clockwise"), for: .normal)
-        reload.accessibilityLabel = "Reload website"
-        reload.addTarget(self, action: #selector(retry), for: .touchUpInside)
-        [title, spinner, home, reload].forEach { toolbar.addArrangedSubview($0) }
-        home.widthAnchor.constraint(equalToConstant: 44).isActive = true
-        reload.widthAnchor.constraint(equalToConstant: 44).isActive = true
-        view.addSubview(toolbar)
-
         NSLayoutConstraint.activate([
-            toolbar.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            toolbar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
-            toolbar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -8),
-            toolbar.heightAnchor.constraint(equalToConstant: 44),
-            webView.topAnchor.constraint(equalTo: toolbar.bottomAnchor),
+            webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             webView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             webView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -158,20 +131,16 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
 
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         errorPanel.isHidden = true
-        spinner.startAnimating()
     }
-    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) { spinner.stopAnimating() }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         showFailure(error)
     }
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) { showFailure(error) }
     func webViewWebContentProcessDidTerminate(_ webView: WKWebView) {
-        spinner.stopAnimating()
         errorMessage.text = "The website stopped responding. Tap Try again to reload it."
         errorPanel.isHidden = false
     }
     private func showFailure(_ error: Error) {
-        spinner.stopAnimating()
         guard (error as NSError).code != NSURLErrorCancelled else { return }
         errorMessage.text = "Could not load the website. Check your connection and try again."
         errorPanel.isHidden = false

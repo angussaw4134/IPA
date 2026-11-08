@@ -261,6 +261,11 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
                   let script = name == "WebsiteState" ? websiteState.script(template: template) : template else { continue }
             controller.addUserScript(WKUserScript(source: script, injectionTime: .atDocumentStart, forMainFrameOnly: true))
         }
+        // The permanent native demo label replaces the website's duplicate label.
+        // Safari keeps its own label; this only affects the app's main frame.
+        controller.addUserScript(WKUserScript(
+            source: "document.getElementById('demo-watermark')?.style.setProperty('visibility', 'hidden');",
+            injectionTime: .atDocumentEnd, forMainFrameOnly: true))
     }
 
     func setPrivacyVisible(_ inactive: Bool) {

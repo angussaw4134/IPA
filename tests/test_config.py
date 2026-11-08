@@ -9,7 +9,7 @@ spec.loader.exec_module(config)
 
 class WebsiteConfigurationTests(unittest.TestCase):
     def test_normalizes_https_origin(self):
-        self.assertEqual(config.website_url(" https://3377speedincreese.fejiofasj.workers.dev "), config.DEFAULT_URL)
+        self.assertEqual(config.website_url(" https://3377christmas.fejiofasj.workers.dev "), config.DEFAULT_URL)
 
     def test_rejects_unsafe_or_ambiguous_addresses(self):
         for url in ["http://example.com", "https://user:secret@example.com", "file:///tmp/a",

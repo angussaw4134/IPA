@@ -17,9 +17,10 @@ final class StorefrontUITests: XCTestCase {
                 XCTAssertTrue(success)
                 delivered.fulfill()
             }
-            wait(for: [delivered], timeout: 15)
             let prompt = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.buttons["Open"]
-            if prompt.waitForExistence(timeout: 2) { prompt.tap() }
+            if prompt.waitForExistence(timeout: 5) { prompt.tap() }
+            // The completion callback waits for the user's approval, too.
+            wait(for: [delivered], timeout: 15)
         }
         func open(_ expected: Int) -> String {
             send(url)

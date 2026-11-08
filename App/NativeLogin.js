@@ -59,6 +59,7 @@
           transitioning = false; pinBusy = false; checking(false); return;
         }
         demoLoggedIn = true; pinInput.value = ''; updatePinDots(); show('home');
+        window.MainPagePreload?.warm();
         const home = $('screen-home');
         if (!reduced() && typeof pinScreen.animate === 'function') {
           pinScreen.classList.add('login-exit-layer');
@@ -121,6 +122,7 @@
       if (run === epoch && savedToken === token()) finish();
     }
     function cancel() {
+      window.MainPagePreload?.cancel();
       epoch++; native('cancel', token()).catch(() => {});
       busy = false; pinBusy = false; transitioning = false; enrollAfterPin = false; refreshedToken = ''; enabled = false;
       clearTimeout(pinSubmitTimer); animations.forEach(a => a.cancel()); animations = [];

@@ -32,10 +32,13 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     private let errorPanel = UIStackView()
     private let errorMessage = UILabel()
     private lazy var security = NativeSecurity(origin: startURL)
+    private lazy var accessPolicy = NativeAccessPolicy(origin: startURL)
     private let privacyCover = UIImageView(image: UIImage(named: "privacy-cover.png"))
     private var nativeReady = false
     private var preparingNative = false
     private var motionReplies: [(WKPermissionDecision) -> Void] = []
+    private var licenseVisible = false
+    private var appInactive = false
 
     override var preferredStatusBarStyle: UIStatusBarStyle { .lightContent }
 
@@ -47,10 +50,13 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         configuration.allowsInlineMediaPlayback = true
         configuration.userContentController.addScriptMessageHandler(security, contentWorld: .page, name: "nativeSecurity")
         configuration.userContentController.add(self, name: "openurl")
-        if let path = Bundle.main.url(forResource: "NativeLogin", withExtension: "js"),
-           let script = try? String(contentsOf: path, encoding: .utf8) {
-            configuration.userContentController.addUserScript(WKUserScript(source: script,
-                injectionTime: .atDocumentStart, forMainFrameOnly: true))
+        configuration.userContentController.add(self, name: "privacyState")
+        for name in ["MainPagePreload", "NativeLogin"] {
+            if let path = Bundle.main.url(forResource: name, withExtension: "js"),
+               let script = try? String(contentsOf: path, encoding: .utf8) {
+                configuration.userContentController.addUserScript(WKUserScript(source: script,
+                    injectionTime: .atDocumentStart, forMainFrameOnly: true))
+            }
         }
         webView = WKWebView(frame: .zero, configuration: configuration)
         webView.navigationDelegate = self
@@ -60,6 +66,8 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         webView.scrollView.backgroundColor = view.backgroundColor
         webView.scrollView.contentInsetAdjustmentBehavior = .never
         webView.allowsBackForwardNavigationGestures = true
+        webView.allowsLinkPreview = false
+        if #available(iOS 16.4, *) { webView.isInspectable = false }
         webView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(webView)
 
@@ -109,7 +117,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
             privacyCover.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             privacyCover.trailingAnchor.constraint(equalTo: view.trailingAnchor)
         ])
-        privacyCover.isHidden = UIApplication.shared.applicationState == .active
+        privacyCover.isHidden = true
 
         // A native label stays visible on every page, without covering touch targets.
         let demo = UILabel()
@@ -172,11 +180,13 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     }
 
     private func isWebsite(_ url: URL) -> Bool {
-        url.scheme == "https" && url.host == startURL.host && (url.port ?? 443) == (startURL.port ?? 443)
+        accessPolicy.isWebsite(url)
     }
 
-    func setPrivacyVisible(_ visible: Bool) {
+    func setPrivacyVisible(_ inactive: Bool) {
         guard isViewLoaded else { return }
+        appInactive = inactive
+        let visible = inactive && licenseVisible
         privacyCover.isHidden = !visible
         webView.accessibilityElementsHidden = visible
         view.layoutIfNeeded()
@@ -193,12 +203,18 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     }
 
     private func openExternal(_ url: URL) {
-        guard ["https", "http", "mailto", "tel"].contains(url.scheme?.lowercased() ?? "") else { return }
+        guard accessPolicy.permitsExternal(url) else { return }
         UIApplication.shared.open(url, options: [:], completionHandler: nil)
     }
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        guard security.trusts(message.frameInfo) else { return }
+        if message.name == "privacyState", let visible = message.body as? Bool {
+            licenseVisible = visible
+            setPrivacyVisible(appInactive)
+            return
+        }
         guard message.name == "openurl", security.trusts(message.frameInfo),
-              let value = message.body as? String,
+              let value = message.body as? String, value.utf8.count <= 4096,
               let url = URL(string: value, relativeTo: startURL)?.absoluteURL else { return }
         if isWebsite(url) { webView.load(URLRequest(url: url)) }
         else { openExternal(url) }
@@ -208,7 +224,9 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
                  decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         guard let url = navigationAction.request.url else { decisionHandler(.cancel); return }
         if navigationAction.targetFrame?.isMainFrame == false {
-            decisionHandler(.allow)
+            let blank = ["about:blank", "about:srcdoc"].contains(url.absoluteString)
+                && security.trustsOrigin(navigationAction.sourceFrame.securityOrigin)
+            decisionHandler(isWebsite(url) || blank ? .allow : .cancel)
             return
         }
         if isWebsite(url) {
@@ -263,6 +281,10 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
         errorPanel.isHidden = true
     }
+    func webView(_ webView: WKWebView, didCommit navigation: WKNavigation!) {
+        licenseVisible = false
+        setPrivacyVisible(appInactive)
+    }
     func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         showFailure(error)
     }
@@ -279,14 +301,14 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
 
     func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
                  initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
-        guard presentedViewController == nil else { completionHandler(); return }
+        guard security.trusts(frame), presentedViewController == nil else { completionHandler(); return }
         let alert = UIAlertController(title: "Website message", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler() })
         present(alert, animated: true)
     }
     func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String,
                  initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
-        guard presentedViewController == nil else { completionHandler(false); return }
+        guard security.trusts(frame), presentedViewController == nil else { completionHandler(false); return }
         let alert = UIAlertController(title: "Website confirmation", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completionHandler(false) })
         alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler(true) })
@@ -295,7 +317,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String,
                  defaultText: String?, initiatedByFrame frame: WKFrameInfo,
                  completionHandler: @escaping (String?) -> Void) {
-        guard presentedViewController == nil else { completionHandler(nil); return }
+        guard security.trusts(frame), presentedViewController == nil else { completionHandler(nil); return }
         let alert = UIAlertController(title: "Website input", message: prompt, preferredStyle: .alert)
         alert.addTextField { $0.text = defaultText }
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completionHandler(nil) })

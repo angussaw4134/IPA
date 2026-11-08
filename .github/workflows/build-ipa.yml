@@ -25,12 +25,16 @@ jobs:
       - name: Check build configuration
         run: python3 -m unittest discover -s tests -v
       - name: Check native login integration
-        run: node --test tests/native-login.mjs
+        run: node --test tests/*.mjs
       - name: Exercise WebKit startup rule compiler
         run: |
           mkdir -p build
           swiftc App/NativeContentRules.swift tests/content-rules.swift -o build/check-content-rules
           build/check-content-rules
+      - name: Check navigation and authentication request policy
+        run: |
+          swiftc App/NativeAccessPolicy.swift tests/access-policy.swift -o build/check-access-policy
+          python3 tests/auth-redirect.py build/check-access-policy
       - name: Compile iPhone app and package IPA
         run: bash scripts/build-ipa.sh
       - name: Downloadable SideStore app

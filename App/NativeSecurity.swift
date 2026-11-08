@@ -17,16 +17,19 @@ final class NativeSecurity: NSObject, WKScriptMessageHandlerWithReply {
     private let session: URLSession = {
         let config = URLSessionConfiguration.ephemeral
         config.httpShouldSetCookies = false
+        config.urlCache = nil
+        config.requestCachePolicy = .reloadIgnoringLocalCacheData
         config.timeoutIntervalForRequest = 15
-        return URLSession(configuration: config)
+        return URLSession(configuration: config, delegate: NoAuthenticationRedirects(), delegateQueue: nil)
     }()
 
     init(origin: URL) { self.origin = origin }
 
     func trusts(_ frame: WKFrameInfo) -> Bool {
-        let source = frame.securityOrigin
-        return frame.isMainFrame && source.protocol == "https" && source.host == origin.host
-            && [0, 443].contains(source.port)
+        frame.isMainFrame && trustsOrigin(frame.securityOrigin)
+    }
+    func trustsOrigin(_ source: WKSecurityOrigin) -> Bool {
+        NativeAccessPolicy(origin: origin).trusts(protocol: source.protocol, host: source.host, port: source.port)
     }
 
     private func account(_ token: String) -> String {
@@ -42,7 +45,9 @@ final class NativeSecurity: NSObject, WKScriptMessageHandlerWithReply {
     private func enrolled(_ account: String) -> Bool {
         var request = query(account)
         request[kSecReturnAttributes as String] = true
-        request[kSecUseAuthenticationUI as String] = kSecUseAuthenticationUIFail
+        let context = LAContext()
+        context.interactionNotAllowed = true
+        request[kSecUseAuthenticationContext as String] = context
         return SecItemCopyMatching(request as CFDictionary, nil) == errSecSuccess
     }
 
@@ -155,7 +160,6 @@ final class NativeSecurity: NSObject, WKScriptMessageHandlerWithReply {
             } else {
                 request[kSecReturnData as String] = true
                 request[kSecUseAuthenticationContext as String] = authentication
-                request[kSecUseOperationPrompt as String] = "Unlock your test app."
                 var stored: CFTypeRef?
                 result = SecItemCopyMatching(request as CFDictionary, &stored)
                 guard result == errSecSuccess, let value = stored as? Data, value == Data(token.utf8) else {

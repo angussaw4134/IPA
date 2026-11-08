@@ -46,6 +46,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     private lazy var accessPolicy = NativeAccessPolicy(origin: startURL)
     private lazy var websiteState = WebsiteStateVault(origin: startURL)
     private let privacyCover = UIImageView(image: UIImage(named: "privacy-cover.png"))
+    private let demoLabel = UILabel()
     private var nativeReady = false
     private var preparingNative = false
     private var motionReplies: [(WKPermissionDecision) -> Void] = []
@@ -63,6 +64,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         let count = defaults.integer(forKey: "storefrontLaunchCount") + 1
         defaults.set(count, forKey: "storefrontLaunchCount")
         let receipt: [String: Any] = ["count": count, "pid": ProcessInfo.processInfo.processIdentifier]
+        demoLabel.accessibilityValue = "\(count):\(ProcessInfo.processInfo.processIdentifier)"
         if let folder = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first,
            let data = try? JSONSerialization.data(withJSONObject: receipt) {
             do {
@@ -158,7 +160,10 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         privacyCover.isHidden = true
 
         // A native label stays visible on every page, without covering touch targets.
-        let demo = UILabel()
+        let demo = demoLabel
+        #if DEBUG
+        demo.accessibilityIdentifier = "storefront-launch-receipt"
+        #endif
         demo.text = "Testing Phase Demo build"
         demo.textColor = .white
         demo.font = .systemFont(ofSize: 30, weight: .heavy)

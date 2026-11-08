@@ -112,6 +112,24 @@ def configure():
   A00000000000000000000039 = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = StorefrontLaunch.js; sourceTree = "<group>";};
   A00000000000000000000040 = {isa = PBXBuildFile; fileRef = A00000000000000000000039;};
  };\n rootObject''')
+    project = project.replace('targets = (A00000000000000000000005);', 'targets = (A00000000000000000000005, A00000000000000000000041);')
+    project = project.replace('children = (A00000000000000000000003, A00000000000000000000004);', 'children = (A00000000000000000000003, A00000000000000000000004, A00000000000000000000053);')
+    project = project.replace('children = (A00000000000000000000009);', 'children = (A00000000000000000000009, A00000000000000000000042);')
+    project = project.replace(' };\n rootObject', '''
+  A00000000000000000000041 = {isa = PBXNativeTarget; buildConfigurationList = A00000000000000000000048; buildPhases = (A00000000000000000000045, A00000000000000000000046, A00000000000000000000047); buildRules = (); dependencies = (A00000000000000000000052); name = StorefrontUITests; productName = StorefrontUITests; productReference = A00000000000000000000042; productType = "com.apple.product-type.bundle.ui-testing";};
+  A00000000000000000000042 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = StorefrontUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR;};
+  A00000000000000000000043 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorefrontUITests.swift; sourceTree = "<group>";};
+  A00000000000000000000044 = {isa = PBXBuildFile; fileRef = A00000000000000000000043;};
+  A00000000000000000000045 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (A00000000000000000000044); runOnlyForDeploymentPostprocessing = 0;};
+  A00000000000000000000046 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
+  A00000000000000000000047 = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
+  A00000000000000000000048 = {isa = XCConfigurationList; buildConfigurations = (A00000000000000000000049, A00000000000000000000050); defaultConfigurationIsVisible = 0; defaultConfigurationName = Debug;};
+  A00000000000000000000049 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGNING_ALLOWED = NO; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = dev.accesshub.storefrontuitests; PRODUCT_NAME = "$(TARGET_NAME)"; TARGETED_DEVICE_FAMILY = 1; TEST_TARGET_NAME = AccessHubTest; IPHONEOS_DEPLOYMENT_TARGET = 16.4; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");}; name = Debug;};
+  A00000000000000000000050 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGNING_ALLOWED = NO; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = dev.accesshub.storefrontuitests; PRODUCT_NAME = "$(TARGET_NAME)"; TARGETED_DEVICE_FAMILY = 1; TEST_TARGET_NAME = AccessHubTest; IPHONEOS_DEPLOYMENT_TARGET = 16.4; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks", "@loader_path/Frameworks");}; name = Release;};
+  A00000000000000000000051 = {isa = PBXContainerItemProxy; containerPortal = A00000000000000000000001; proxyType = 1; remoteGlobalIDString = A00000000000000000000005; remoteInfo = AccessHubTest;};
+  A00000000000000000000052 = {isa = PBXTargetDependency; target = A00000000000000000000005; targetProxy = A00000000000000000000051;};
+  A00000000000000000000053 = {isa = PBXGroup; children = (A00000000000000000000043); path = tests; sourceTree = "<group>";};
+ };\n rootObject''')
     project_dir = ROOT / "AccessHubTest.xcodeproj"
     scheme_dir = project_dir / "xcshareddata/xcschemes"
     scheme_dir.mkdir(parents=True, exist_ok=True)
@@ -128,6 +146,20 @@ def configure():
  </LaunchAction>
  <AnalyzeAction buildConfiguration="Debug"/>
  <ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"/>
+</Scheme>
+''', encoding="utf-8")
+    (scheme_dir / "StorefrontLaunchTests.xcscheme").write_text('''<?xml version="1.0" encoding="UTF-8"?>
+<Scheme LastUpgradeVersion="1600" version="1.3">
+ <BuildAction parallelizeBuildables="YES" buildImplicitDependencies="YES"><BuildActionEntries>
+  <BuildActionEntry buildForTesting="YES" buildForRunning="NO" buildForProfiling="NO" buildForArchiving="NO" buildForAnalyzing="NO">
+   <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="A00000000000000000000041" BuildableName="StorefrontUITests.xctest" BlueprintName="StorefrontUITests" ReferencedContainer="container:AccessHubTest.xcodeproj"/>
+  </BuildActionEntry>
+ </BuildActionEntries></BuildAction>
+ <TestAction buildConfiguration="Debug" selectedDebuggerIdentifier="Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier="Xcode.IDEFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv="YES">
+  <Testables><TestableReference skipped="NO">
+   <BuildableReference BuildableIdentifier="primary" BlueprintIdentifier="A00000000000000000000041" BuildableName="StorefrontUITests.xctest" BlueprintName="StorefrontUITests" ReferencedContainer="container:AccessHubTest.xcodeproj"/>
+  </TestableReference></Testables>
+ </TestAction>
 </Scheme>
 ''', encoding="utf-8")
     print(f"Configured AccessHub Test for {url}")

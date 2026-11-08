@@ -28,7 +28,8 @@ with open("build/simulator-build.log", "w") as log:
         "xcodebuild", "-project", "AccessHubTest.xcodeproj", "-scheme", "StorefrontLaunchTests",
         "-configuration", "Debug", "-sdk", "iphonesimulator", "-destination", f"platform=iOS Simulator,id={udid}",
         "-derivedDataPath", "build/Simulator", "-parallel-testing-enabled", "NO",
-        "-resultBundlePath", "build/StorefrontTests.xcresult", "CODE_SIGNING_ALLOWED=NO", "test"
+        "-resultBundlePath", "build/StorefrontTests.xcresult", "CODE_SIGNING_ALLOWED=YES",
+        "CODE_SIGN_IDENTITY=-", "CODE_SIGNING_REQUIRED=YES", "test"
     ], stdout=log, stderr=subprocess.STDOUT, timeout=600)
 if result.returncode:
     print("\n".join(pathlib.Path("build/simulator-build.log").read_text().splitlines()[-100:]))

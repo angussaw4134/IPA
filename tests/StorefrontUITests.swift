@@ -12,6 +12,8 @@ final class StorefrontUITests: XCTestCase {
         func send(_ target: URL) {
             // Use the same cross-app API as a native storefront. XCUIApplication.open
             // starts a fresh launch session, so it cannot verify process preservation.
+            // Make the native sender visible, just like tapping Open in the storefront.
+            XCUIApplication(bundleIdentifier: Bundle.main.bundleIdentifier!).activate()
             let delivered = expectation(description: "iOS accepts custom URL")
             UIApplication.shared.open(target, options: [:]) { success in
                 XCTAssertTrue(success)

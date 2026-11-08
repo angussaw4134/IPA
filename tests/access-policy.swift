@@ -15,7 +15,7 @@ enum AccessPolicyCheck {
         for url in ["https://example.org/help", "http://example.org/help", "mailto:help@example.org", "tel:+61412345678"] {
             precondition(policy.permitsExternal(URL(string: url)!), url)
         }
-        for url in ["file:///private/data", "javascript:alert(1)", "data:text/html,test", "app-settings:",
+        for url in ["file:///private/data", "javascript:alert(1)", "data:text/html,test", "app-settings:", "mailto:", "tel:", "mailto:?subject=test",
                     "https://user:password@example.org/", "https://example.org/" + String(repeating: "x", count: 4096)] {
             precondition(!policy.permitsExternal(URL(string: url)!), url)
         }

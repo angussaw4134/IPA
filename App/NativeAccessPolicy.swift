@@ -14,7 +14,11 @@ struct NativeAccessPolicy {
         guard url.absoluteString.utf8.count <= 4096, url.user == nil, url.password == nil else { return false }
         switch url.scheme?.lowercased() {
         case "https", "http": return !(url.host ?? "").isEmpty
-        case "mailto", "tel": return !url.path.isEmpty
+        case "mailto", "tel":
+            // Foundation leaves path empty for opaque URLs such as mailto: and tel:.
+            let target = url.absoluteString.dropFirst((url.scheme?.count ?? 0) + 1)
+                .prefix { $0 != "?" && $0 != "#" }
+            return !target.isEmpty && !target.hasPrefix("//")
         default: return false
         }
     }

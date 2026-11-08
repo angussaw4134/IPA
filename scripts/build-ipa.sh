@@ -16,7 +16,7 @@ xcodebuild -project AccessHubTest.xcodeproj -scheme AccessHubTest \
 
 APP="build/DerivedData/Build/Products/Release-iphoneos/AccessHubTest.app"
 test -f "$APP/AccessHubTest"
-lipo -verify_arch arm64 "$APP/AccessHubTest"
+lipo "$APP/AccessHubTest" -verify_arch arm64
 PACKAGE="$(mktemp -d "$PWD/build/ipa.XXXXXX")"
 mkdir -p "$PACKAGE/Payload"
 ditto "$APP" "$PACKAGE/Payload/AccessHubTest.app"

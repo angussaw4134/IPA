@@ -21,13 +21,13 @@ jobs:
     env:
       WEBSITE_URL: ${{ inputs.website_url || 'https://3377.erg3be.workers.dev/' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Check build configuration
         run: python3 -m unittest discover -s tests -v
       - name: Compile iPhone app and package IPA
         run: bash scripts/build-ipa.sh
       - name: Downloadable SideStore app
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: AccessHubTest-SideStore
           path: |
@@ -37,7 +37,7 @@ jobs:
           retention-days: 14
       - name: Build log
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Xcode-build-log
           path: build/xcodebuild.log

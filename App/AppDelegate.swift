@@ -170,7 +170,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         #if DEBUG
         demo.accessibilityIdentifier = "storefront-launch-receipt"
         #endif
-        demo.text = "Testing Phase Demo build"
+        demo.text = ""
         demo.textColor = .white
         demo.font = .systemFont(ofSize: 30, weight: .heavy)
         demo.textAlignment = .center
@@ -190,7 +190,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         ])
         // Decorative only: keep the permanent demo label and all touch targets intact.
         let season = UILabel()
-        season.text = "✦  CHRISTMAS EDITION  ✦"
+        season.text = ""
         season.textColor = UIColor(red: 0.94, green: 0.83, blue: 0.58, alpha: 1)
         season.font = .systemFont(ofSize: 12, weight: .semibold)
         season.textAlignment = .center

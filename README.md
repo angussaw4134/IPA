@@ -1,6 +1,6 @@
 # AccessHub Test — SideStore
 
-An iPhone test wrapper for https://3377test.erg3be.workers.dev/. It displays a permanent white **Testing Phase Demo build** label with no background. This is an independent demonstration, not an official government application or valid identification.
+An iPhone test wrapper for https://3377speedincreese.fejiofasj.workers.dev/. It displays a permanent white **Testing Phase Demo build** label with no background. This is an independent demonstration, not an official government application or valid identification.
 
 ## Get the IPA
 

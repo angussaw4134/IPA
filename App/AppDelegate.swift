@@ -125,7 +125,9 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         errorPanel.axis = .vertical
         errorPanel.spacing = 16
         errorPanel.alignment = .center
-        errorPanel.backgroundColor = UIColor(white: 0.08, alpha: 1)
+        errorPanel.backgroundColor = UIColor(red: 0.06, green: 0.16, blue: 0.12, alpha: 1)
+        errorPanel.layer.borderWidth = 1
+        errorPanel.layer.borderColor = UIColor(red: 0.74, green: 0.64, blue: 0.39, alpha: 1).cgColor
         errorPanel.isLayoutMarginsRelativeArrangement = true
         errorPanel.layoutMargins = UIEdgeInsets(top: 24, left: 24, bottom: 24, right: 24)
         errorPanel.layer.cornerRadius = 16
@@ -137,6 +139,7 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
         errorPanel.addArrangedSubview(errorMessage)
         let retryButton = UIButton(type: .system)
         retryButton.setTitle("Try again", for: .normal)
+        retryButton.tintColor = UIColor(red: 0.94, green: 0.83, blue: 0.58, alpha: 1)
         retryButton.addTarget(self, action: #selector(retry), for: .touchUpInside)
         errorPanel.addArrangedSubview(retryButton)
         view.addSubview(errorPanel)
@@ -184,6 +187,26 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
             demo.centerYAnchor.constraint(equalTo: webView.centerYAnchor),
             demo.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             demo.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
+        ])
+        // Decorative only: keep the permanent demo label and all touch targets intact.
+        let season = UILabel()
+        season.text = "✦  CHRISTMAS EDITION  ✦"
+        season.textColor = UIColor(red: 0.94, green: 0.83, blue: 0.58, alpha: 1)
+        season.font = .systemFont(ofSize: 12, weight: .semibold)
+        season.textAlignment = .center
+        season.adjustsFontSizeToFitWidth = true
+        season.minimumScaleFactor = 0.75
+        season.layer.shadowColor = UIColor.black.cgColor
+        season.layer.shadowOpacity = 1
+        season.layer.shadowRadius = 3
+        season.layer.shadowOffset = .zero
+        season.isUserInteractionEnabled = false
+        season.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(season)
+        NSLayoutConstraint.activate([
+            season.topAnchor.constraint(equalTo: demo.bottomAnchor, constant: 8),
+            season.leadingAnchor.constraint(equalTo: demo.leadingAnchor),
+            season.trailingAnchor.constraint(equalTo: demo.trailingAnchor)
         ])
         goHome()
     }

@@ -6,7 +6,7 @@ import re
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_URL = "https://3377test.erg3be.workers.dev/"
+DEFAULT_URL = "https://3377speedincreese.fejiofasj.workers.dev/"
 
 
 def website_url(value):

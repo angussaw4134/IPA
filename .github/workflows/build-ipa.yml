@@ -1,0 +1,45 @@
+name: Build SideStore IPA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      website_url:
+        description: Website to open (HTTPS, no path)
+        required: true
+        default: https://3377.erg3be.workers.dev/
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      WEBSITE_URL: ${{ inputs.website_url || 'https://3377.erg3be.workers.dev/' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check build configuration
+        run: python3 -m unittest discover -s tests -v
+      - name: Compile iPhone app and package IPA
+        run: bash scripts/build-ipa.sh
+      - name: Downloadable SideStore app
+        uses: actions/upload-artifact@v4
+        with:
+          name: AccessHubTest-SideStore
+          path: |
+            dist/AccessHubTest.ipa
+            dist/AccessHubTest.sha256
+          if-no-files-found: error
+          retention-days: 14
+      - name: Build log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Xcode-build-log
+          path: build/xcodebuild.log
+          if-no-files-found: ignore
+          retention-days: 7

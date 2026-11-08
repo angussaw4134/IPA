@@ -1,0 +1,7 @@
+build/
+dist/
+*.ipa
+*.xcuserstate
+xcuserdata/
+.DS_Store
+__pycache__/

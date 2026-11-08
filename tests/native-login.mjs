@@ -15,16 +15,16 @@ class Element {
   focus() {}
   click() { if (!this.disabled) return this.events.click?.(); }
 }
-function setup({enabled = false, supported = true, automatic = false} = {}) {
+function setup({enabled = false, supported = true, automatic = false, reducedMotion = true} = {}) {
   const nodes = new Map(); const $ = id => { if (!nodes.has(id)) nodes.set(id, new Element()); return nodes.get(id); };
   $('screen-splash').classes.add('active');
   let savedToken = 'activation', pending, authError, removeError, sessionError;
   let serverActive = true;
-  const calls = [], shows = [], timers = new Map(), events = {}, documentEvents = {}; let timerID = 0;
+  const delays = [], calls = [], shows = [], timers = new Map(), events = {}, documentEvents = {}; let timerID = 0;
   const context = vm.createContext({
     document: {getElementById: $, readyState: 'loading', hidden: false, addEventListener: (type, fn) => documentEvents[type] = fn},
     window: {
-      matchMedia: () => ({matches: true}), addEventListener: (type, fn) => events[type] = fn,
+      matchMedia: () => ({matches: reducedMotion}), addEventListener: (type, fn) => events[type] = fn,
       SecuritySettings: {automaticFaceId: () => automatic},
       webkit: {messageHandlers: {nativeSecurity: {postMessage: async ({action, token}) => {
         calls.push({action, token});
@@ -44,10 +44,10 @@ function setup({enabled = false, supported = true, automatic = false} = {}) {
       calls.push({path, body}); if (sessionError) throw sessionError; return {active: serverActive};
     },
     checkBrowserAccess: async () => { context.demoActivated = false; context.window.DemoLogin.cancel(); },
-    setTimeout: fn => { timers.set(++timerID, fn); return timerID; }, clearTimeout: id => timers.delete(id)
+    setTimeout: (fn, delay) => { delays.push(delay); timers.set(++timerID, fn); return timerID; }, clearTimeout: id => timers.delete(id)
   });
   vm.runInContext(code, context);
-  return {context, $, calls, shows, events, api: context.window.DemoLogin,
+  return {context, $, calls, shows, delays, events, api: context.window.DemoLogin,
     initialize: () => documentEvents.DOMContentLoaded(),
     runTimers() { for (const [id, fn] of [...timers]) { timers.delete(id); fn(); } },
     setToken: value => savedToken = value, setPending: value => pending = value,
@@ -128,4 +128,22 @@ test('unsupported device keeps PIN login; changed token cancels pending transiti
   assert.equal(t.$('passkey-login').hidden, true);
   t.context.pinBusy = true; await t.api.afterPin(); t.setToken('other'); t.runTimers(); assert.deepEqual(t.shows, []);
   t.context.pinBusy = true; await t.api.afterPin(); t.runTimers(); assert.deepEqual(t.shows, ['home']);
+});
+
+test('smooth login holds the checking stage and honors reduced motion', async () => {
+  for (const reducedMotion of [false, true]) {
+    const t = setup({reducedMotion}); t.initialize(); await flush();
+    t.context.pinBusy = true; await t.api.afterPin();
+    assert.deepEqual(t.shows, []);
+    assert.equal(t.$('login-progress').hidden, false);
+    assert.equal(t.delays.at(-1), reducedMotion ? 0 : 650);
+    t.runTimers(); assert.deepEqual(t.shows, ['home']);
+  }
+});
+test('backgrounding during the smooth login stage cancels entry', async () => {
+  const t = setup({reducedMotion:false}); t.initialize(); await flush();
+  t.context.pinBusy = true; await t.api.afterPin();
+  t.events['accesshub-native-background'](); t.runTimers();
+  assert.deepEqual(t.shows, []); assert.equal(t.context.demoLoggedIn, false);
+  assert.equal(t.$('login-progress').hidden, true);
 });

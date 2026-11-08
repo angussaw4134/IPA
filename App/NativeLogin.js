@@ -63,14 +63,14 @@
         const home = $('screen-home');
         if (!reduced() && typeof pinScreen.animate === 'function') {
           pinScreen.classList.add('login-exit-layer');
-          const exit = pinScreen.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-8px)'}],{duration:280,easing:'cubic-bezier(.22,1,.36,1)'});
-          const enter = home.animate([{opacity:.4,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:360,easing:'cubic-bezier(.22,1,.36,1)'});
+          const exit = pinScreen.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-8px)'}],{duration:480,easing:'cubic-bezier(.22,1,.36,1)'});
+          const enter = home.animate([{opacity:.4,transform:'translateY(8px)'},{opacity:1,transform:'none'}],{duration:560,easing:'cubic-bezier(.22,1,.36,1)'});
           animations = [exit,enter];
           exit.onfinish = () => { pinScreen.classList.remove('login-exit-layer'); checking(false); exit.cancel(); };
           enter.onfinish = () => { enter.cancel(); animations = []; };
         } else checking(false);
         transitioning = false; pinBusy = false;
-      }, 0);
+      }, reduced() ? 0 : 650);
     }
     async function ceremony(registering) {
       if (busy || !supported || !demoActivated || (registering && !demoLoggedIn && !pinBusy)) return false;

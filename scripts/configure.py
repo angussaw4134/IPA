@@ -41,7 +41,7 @@ def configure():
             "CFBundleTypeRole": "Viewer",
             "CFBundleURLSchemes": ["storefrontdemo"],
         }],
-        "UIApplicationSceneManifest": {"UIApplicationSupportsMultipleScenes": False},
+        "UIApplicationSceneManifest": {"UIApplicationSupportsMultipleScenes": False, "UISceneConfigurations": {}},
         "LSRequiresIPhoneOS": True,
         "UIRequiredDeviceCapabilities": ["arm64"],
         "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait"],

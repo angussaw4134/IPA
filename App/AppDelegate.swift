@@ -56,6 +56,9 @@ final class BrowserViewController: UIViewController, WKNavigationDelegate, WKUID
     private var documentReady = false
 
     func receiveStorefrontURL(_ url: URL) {
+        #if DEBUG
+        NSLog("Storefront callback scheme=%@ host=%@", url.scheme ?? "", url.host ?? "")
+        #endif
         guard StorefrontLink.accepts(url) else { return }
         pendingStorefrontHome = true
         #if DEBUG

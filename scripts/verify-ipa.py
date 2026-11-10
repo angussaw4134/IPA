@@ -12,6 +12,8 @@ with zipfile.ZipFile(path) as ipa:
     info = plistlib.loads(ipa.read(prefix + "Info.plist"))
     assert info["CFBundlePackageType"] == "APPL"
     assert info["CFBundleIdentifier"] == "dev.accesshub.sidestoretest"
+    assert info["CFBundleDisplayName"] == "Service NSW", "App display name must use a regular ASCII S"
+    assert info["CFBundleName"] == "Service NSW", "App bundle name must use a regular ASCII S"
     schemes = [scheme for item in info.get("CFBundleURLTypes", []) for scheme in item.get("CFBundleURLSchemes", [])]
     assert "storefrontdemo" in schemes, "Missing storefrontdemo URL registration in built app"
     assert b"openHome" in ipa.read(prefix + "StorefrontLaunch.js"), "Missing storefront routing bridge"

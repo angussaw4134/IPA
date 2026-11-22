@@ -1,0 +1,48 @@
+--- a/html/index.html
++++ b/html/index.html
+@@ -154,3 +154,3 @@
+     </style>
+-<link rel="stylesheet" href="/demo-label.css?v=2">
++<link rel="stylesheet" href="/demo-label.css?v=3">
+ <style>.rego-torch{pointer-events:auto;cursor:pointer;color:#cfeaf7}.rego-torch:disabled{opacity:.65;cursor:default}.qr-torch-control{position:absolute;top:44%;left:33.7%;width:32.6%;height:4.8%;z-index:7;border:0;background:transparent;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}.qr-torch-control:disabled{opacity:1;cursor:default}.qr-torch-control [data-torch-state]{position:absolute;left:69%;top:27%;width:27%;height:49%;display:flex;align-items:center;justify-content:flex-start;background:#343c40;color:#cfeaf7;font:600 clamp(11px,3.55vw,18px)/1 -apple-system,BlinkMacSystemFont,sans-serif}.qr-torch-control [hidden]{display:none!important}.qr-torch-control:focus-visible{outline:2px solid #cfeaf7;outline-offset:2px}</style>
+@@ -163,6 +163,6 @@
+         <!-- VISIBLE CENTRE DEMO LABEL — styled by #demo-watermark in login-ui.css -->
+-        <div id="demo-watermark" aria-label="Demo — not valid identification"></div>
++        <div id="demo-watermark" aria-label="Demo testing build — not valid identification">DEMO TESTING BUILD</div>
+         <div id="app-privacy-cover" hidden aria-hidden="true">
+             <img src="app-switcher-cover.png" alt="" decoding="async">
+-            <span class="app-privacy-demo"></span>
++            <span class="app-privacy-demo">DEMO TESTING BUILD</span>
+         </div>
+--- a/html/access-entry.html
++++ b/html/access-entry.html
+@@ -26,3 +26,3 @@
+ <script src="/access-entry.js?v=owner-only-1" defer></script>
+-<link rel="stylesheet" href="/demo-label.css?v=2">
++<link rel="stylesheet" href="/demo-label.css?v=3">
+ </head>
+@@ -31,3 +31,3 @@
+ 
+-<div id="demo-watermark" aria-label="Demo — not valid identification">DEMO</div><main>
++<div id="demo-watermark" aria-label="Demo testing build — not valid identification">DEMO TESTING BUILD</div><main>
+ <img class="mark" src="/accesshub-mark.svg" alt="">
+--- a/html/demo-label.css
++++ b/html/demo-label.css
+@@ -13,2 +13,7 @@
+ }
+-dialog[open]::after {content:"";}
++dialog[open]::after {content:"DEMO TESTING BUILD";}
++
++/* The empty session-restoration screen is not a separate demo splash. */
++html.entry-restoring body.christmas-entry #demo-watermark {
++  display:none!important;
++}
+--- a/tests/startup-intro.test.mjs
++++ b/tests/startup-intro.test.mjs
+@@ -9,4 +9,4 @@
+     assert.ok(html.includes('id="demo-watermark"'));
+-    assert.ok(html.includes('>DEMO</div>'));
+-    assert.ok(html.includes('/demo-label.css?v=2'));
++    assert.ok(html.includes('>DEMO TESTING BUILD</div>'));
++    assert.ok(html.includes('/demo-label.css?v=3'));
+   }

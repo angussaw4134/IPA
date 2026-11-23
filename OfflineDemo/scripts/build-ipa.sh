@@ -13,7 +13,8 @@ PACKAGE="$(mktemp -d "$PWD/build/package.XXXXXX")"
 mkdir -p "$PACKAGE/Payload"
 ditto "$APP" "$PACKAGE/Payload/WinterStudio.app"
 OUTPUT="$PWD/dist/WinterStudioDemo.ipa"
-(cd "$PACKAGE" && /usr/bin/zip -qry "$OUTPUT" Payload)
+(cd "$PACKAGE" && /usr/bin/zip -qry "$PACKAGE/WinterStudioDemo.ipa" Payload)
+mv "$PACKAGE/WinterStudioDemo.ipa" "$OUTPUT"
 python3 scripts/verify-ipa.py dist/WinterStudioDemo.ipa
 shasum -a 256 dist/WinterStudioDemo.ipa > dist/WinterStudioDemo.sha256
 cp README.txt dist/INSTALL.txt

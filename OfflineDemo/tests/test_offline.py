@@ -1,7 +1,7 @@
+import base64
 from pathlib import Path
 import json
 import plistlib
-import re
 import unittest
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -12,11 +12,14 @@ class OfflineBuildTests(unittest.TestCase):
             for forbidden in ['URLSession','WebKit','WKWebView','https://','http://','workers.dev']:
                 self.assertNotIn(forbidden,text,str(path))
     def test_demo_resources(self):
-        hashes=json.loads((ROOT/'App/demo-key-hashes.json').read_text())
-        self.assertEqual(len(hashes),150)
-        self.assertEqual(len(set(hashes)),150)
-        self.assertTrue(all(re.fullmatch('[a-f0-9]{64}',h) for h in hashes))
-        text=(ROOT/'App/WinterStudioApp.swift').read_text()
+        config=json.loads((ROOT/'App/activation-public-key.json').read_text())
+        self.assertEqual(set(config),{'maxDevices','publicKey'})
+        self.assertEqual(config['maxDevices'],200)
+        pub=base64.b64decode(config['publicKey'],validate=True)
+        self.assertEqual(len(pub),65)
+        self.assertEqual(pub[0],4)
+        self.assertFalse((ROOT/'App/demo-key-hashes.json').exists())
+        text=(ROOT/'App/WinterStudioApp.swift').read_text(encoding='utf-8')
         self.assertIn(r'DEMO TEST\nNOT REAL ID',text)
         self.assertIn('FICTIONAL SAMPLE PASS',text)
         self.assertNotIn('Service NSW',text)
@@ -29,6 +32,6 @@ class OfflineBuildTests(unittest.TestCase):
         text=(ROOT/'App/DemoAccess.swift').read_text()
         start=text.index('#if DEBUG')
         end=text.index('#endif',start)
-        self.assertIn('hash == digest(testCode)',text[start:end])
-        self.assertIn('return hashes.contains(hash)',text[end:])
+        self.assertIn('cleaned == "WINTER-UI-TEST-ONLY"',text[start:end])
+        self.assertIn('verifies(cleaned, deviceID:',text[end:])
 if __name__=='__main__': unittest.main()

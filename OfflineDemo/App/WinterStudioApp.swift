@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 @main
 struct WinterStudioApp: App {
@@ -31,7 +32,7 @@ struct DemoLabel: View {
 }
 
 struct StudioRoot: View {
-    @AppStorage("studio.activationHash") private var activationHash = ""
+    @AppStorage("studio.deviceActivation") private var savedActivation = ""
     @AppStorage("studio.nickname") private var nickname = "Alex Sample"
     @AppStorage("studio.savedActivities") private var savedActivities = ""
     @AppStorage("studio.privacyEnabled") private var privacyEnabled = true
@@ -40,12 +41,13 @@ struct StudioRoot: View {
     @State private var selectedTab = 0
     @State private var accessCode = ""
     @State private var accessError = ""
+    @State private var copiedRequest = false
     @State private var showSettings = false
     @State private var showGuide = false
     @State private var showTicket = false
     @State private var confirmReset = false
 
-    private var unlocked: Bool { DemoAccess.contains(hash: activationHash) }
+    private var unlocked: Bool { DemoAccess.accept(savedActivation) != nil }
     private var saved: [String] { savedActivities.split(separator: "|").map(String.init) }
     private var displayName: String { nickname.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? "Alex Sample" : nickname }
 
@@ -87,11 +89,27 @@ struct StudioRoot: View {
                 Image(systemName: "snowflake").font(.system(size: 52)).foregroundStyle(StudioStyle.mint)
                 Text("WINTER STUDIO / OFFLINE").font(.caption.bold()).tracking(2).foregroundStyle(StudioStyle.mint)
                 Text("A little winter.\nAll on your phone.").font(.system(size: 38, weight: .bold, design: .rounded))
-                Text("A fictional, self-contained app playground. Enter a demo code to explore.").foregroundStyle(.secondary)
+                Text("Copy your device code and send it to the owner. Paste the activation code they send back.")
+                    .foregroundStyle(.secondary)
+                if let requestCode = DemoAccess.requestCode {
+                    Button {
+                        UIPasteboard.general.string = requestCode
+                        copiedRequest = true
+                    } label: {
+                        Label(copiedRequest ? "Device code copied" : "Copy device code", systemImage: "doc.on.doc")
+                            .frame(maxWidth: .infinity)
+                            .padding(8)
+                    }
+                    .buttonStyle(.bordered)
+                    .tint(StudioStyle.mint)
+                } else {
+                    Text("Device storage is unavailable. Close and reopen the app after unlocking your phone.")
+                        .font(.callout).foregroundStyle(.orange)
+                }
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("Demo access code").font(.headline)
-                    TextField("WINTER-…", text: $accessCode)
-                        .textInputAutocapitalization(.characters).autocorrectionDisabled()
+                    Text("Activation code").font(.headline)
+                    TextField("WA-…", text: $accessCode)
+                        .textInputAutocapitalization(.never).autocorrectionDisabled()
                         .font(.system(.body, design: .monospaced))
                         .padding().background(StudioStyle.surface, in: RoundedRectangle(cornerRadius: 14))
                         .accessibilityIdentifier("access-code")
@@ -101,7 +119,7 @@ struct StudioRoot: View {
                         .accessibilityIdentifier("open-demo")
                     if !accessError.isEmpty { Text(accessError).font(.callout).foregroundStyle(.orange).accessibilityIdentifier("access-error") }
                 }
-                Text("No website. No account. No tracking.\nDemo codes are checked on this device only.")
+                Text("Activation works offline. Your code is tied to this device.")
                     .font(.footnote).foregroundStyle(.secondary)
                 Text("FICTIONAL DEMONSTRATION • NOT VALID IDENTIFICATION")
                     .font(.caption2.bold()).foregroundStyle(.yellow)
@@ -110,12 +128,12 @@ struct StudioRoot: View {
     }
 
     private func activate() {
-        guard let hash = DemoAccess.accept(accessCode) else {
-            accessError = "That demo code is not recognised. Check it and try again."
+        guard let activation = DemoAccess.accept(accessCode) else {
+            accessError = "This activation code is invalid or belongs to another phone."
             return
         }
         withAnimation(reduceMotion ? nil : .easeInOut(duration: 0.25)) {
-            activationHash = hash
+            savedActivation = activation
             accessError = ""
             accessCode = ""
         }
@@ -264,8 +282,8 @@ struct StudioRoot: View {
                     Text("Deleting the app can remove your settings. Reinstall over the existing app with the same bundle ID and signing account to preserve them.")
                 }
                 Section("Demo access") {
-                    Text("Codes are validated locally. They are reusable and cannot be revoked remotely or restricted to one device.")
-                    Button("Lock demo") { activationHash = ""; showSettings = false; selectedTab = 0 }
+                    Text("Your code activates this device. Keep a copy in case you need to enter it again.")
+                    Button("Lock demo") { savedActivation = ""; showSettings = false; selectedTab = 0 }
                     Button("Reset local demo data", role: .destructive) { confirmReset = true }
                 }
             }.navigationTitle("Settings")
@@ -273,7 +291,7 @@ struct StudioRoot: View {
                 .confirmationDialog("Reset this demo?", isPresented: $confirmReset, titleVisibility: .visible) {
                     Button("Reset local data", role: .destructive) {
                         nickname = "Alex Sample"; savedActivities = ""; privacyEnabled = true
-                        activationHash = ""; showSettings = false; selectedTab = 0
+                        savedActivation = ""; showSettings = false; selectedTab = 0
                     }
                 } message: { Text("Your saved activities and nickname will be removed from this installation.") }
         }
@@ -284,7 +302,7 @@ struct StudioRoot: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 22) {
                     Text("Everything travels with you.").font(.largeTitle.bold())
-                    guideItem("01 / Open", "Enter one of the provided demo codes. It works without an internet connection.")
+                    guideItem("01 / Open", "Use the activation code issued for this device. It works without an internet connection.")
                     guideItem("02 / Explore", "Browse three fictional winter activities. Save or remove favourites instantly.")
                     guideItem("03 / Keep", "Wallet holds your favourites and a fictional sample event pass. It is not valid identification or admission.")
                     guideItem("04 / Make it yours", "Open Settings on Home to change your nickname or privacy preference. All settings stay on your phone.")

@@ -13,7 +13,7 @@ add(2, f'isa = PBXGroup; children = {refs(3,4,53)}; sourceTree = "<group>";')
 add(3, f'isa = PBXGroup; children = {refs(6,7,8,21,23)}; path = App; sourceTree = "<group>";')
 add(4, f'isa = PBXGroup; children = {refs(9,42)}; name = Products; sourceTree = "<group>";')
 add(5, f'isa = PBXNativeTarget; buildConfigurationList = {ref(11)}; buildPhases = {refs(12,13,14)}; buildRules = (); dependencies = (); name = WinterStudio; productName = WinterStudio; productReference = {ref(9)}; productType = "com.apple.product-type.application";')
-for n, kind, path in [(6,'sourcecode.swift','WinterStudioApp.swift'), (7,'text.plist.xml','Info.plist'), (8,'folder.assetcatalog','Assets.xcassets'), (21,'sourcecode.swift','DemoAccess.swift'), (23,'text.json','demo-key-hashes.json'), (43,'sourcecode.swift','OfflineDemoUITests.swift')]:
+for n, kind, path in [(6,'sourcecode.swift','WinterStudioApp.swift'), (7,'text.plist.xml','Info.plist'), (8,'folder.assetcatalog','Assets.xcassets'), (21,'sourcecode.swift','DemoAccess.swift'), (23,'text.json','activation-public-key.json'), (43,'sourcecode.swift','OfflineDemoUITests.swift')]:
     add(n, f'isa = PBXFileReference; lastKnownFileType = {kind}; path = "{path}"; sourceTree = "<group>";')
 for n, kind, path in [(9,'wrapper.application','WinterStudio.app'), (42,'wrapper.cfbundle','OfflineDemoUITests.xctest')]:
     add(n, f'isa = PBXFileReference; explicitFileType = {kind}; includeInIndex = 0; path = {path}; sourceTree = BUILT_PRODUCTS_DIR;')
@@ -53,7 +53,7 @@ info = {
  'CFBundleDisplayName':'3377 Christmas Demo','CFBundleName':'WinterStudio',
  'CFBundleExecutable':'$(EXECUTABLE_NAME)','CFBundleIdentifier':'$(PRODUCT_BUNDLE_IDENTIFIER)',
  'CFBundlePackageType':'APPL','CFBundleInfoDictionaryVersion':'6.0',
- 'CFBundleShortVersionString':'1.0.1','CFBundleVersion':'2','LSRequiresIPhoneOS':True,
+ 'CFBundleShortVersionString':'1.1','CFBundleVersion':'3','LSRequiresIPhoneOS':True,
  'UILaunchScreen':{'UIColorName':'LaunchBackground'},'UIRequiredDeviceCapabilities':['arm64'],
  'UISupportedInterfaceOrientations':['UIInterfaceOrientationPortrait'],'UIUserInterfaceStyle':'Dark',
  'UIApplicationSceneManifest':{'UIApplicationSupportsMultipleScenes':False,'UISceneConfigurations':{}},

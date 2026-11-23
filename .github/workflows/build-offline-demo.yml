@@ -12,10 +12,17 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check cap and iPhone activation verification
+        run: |
+          node --test OfflineDemo/tests/issuer.test.mjs
+          node OfflineDemo/tests/create-activation-fixture.mjs "$RUNNER_TEMP/winter-activation.json"
+          swiftc OfflineDemo/App/DemoAccess.swift OfflineDemo/tests/activation/main.swift -o "$RUNNER_TEMP/winter-activation-test"
+          "$RUNNER_TEMP/winter-activation-test" "$RUNNER_TEMP/winter-activation.json"
       - name: Build unsigned offline arm64 IPA
         run: bash OfflineDemo/scripts/build-ipa.sh
-      - name: Test offline demo on iPhone simulator
-        run: python3 OfflineDemo/scripts/test-simulator.py
       - name: Downloadable offline demo
         uses: actions/upload-artifact@v7
         with:
@@ -26,6 +33,8 @@ jobs:
             OfflineDemo/dist/INSTALL.txt
           if-no-files-found: error
           retention-days: 14
+      - name: Test offline demo on iPhone simulator
+        run: python3 OfflineDemo/scripts/test-simulator.py
       - name: Build and simulator evidence
         if: always()
         uses: actions/upload-artifact@v7

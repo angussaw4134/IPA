@@ -1,0 +1,39 @@
+name: Build Offline Winter Studio IPA
+on:
+  push:
+    branches: [offline-demo]
+    paths: ['OfflineDemo/**', '.github/workflows/build-offline-demo.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v6
+      - name: Build unsigned offline arm64 IPA
+        run: bash OfflineDemo/scripts/build-ipa.sh
+      - name: Test offline demo on iPhone simulator
+        run: python3 OfflineDemo/scripts/test-simulator.py
+      - name: Downloadable offline demo
+        uses: actions/upload-artifact@v7
+        with:
+          name: WinterStudioDemo-unsigned
+          path: |
+            OfflineDemo/dist/WinterStudioDemo.ipa
+            OfflineDemo/dist/WinterStudioDemo.sha256
+            OfflineDemo/dist/INSTALL.txt
+          if-no-files-found: error
+          retention-days: 14
+      - name: Build and simulator evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: WinterStudioDemo-build-evidence
+          path: |
+            OfflineDemo/build/device-build.log
+            OfflineDemo/build/OfflineDemo.xcresult
+            OfflineDemo/build/screenshots
+          if-no-files-found: ignore
+          retention-days: 7

@@ -1,0 +1,6 @@
+build/
+dist/
+WinterStudio.xcodeproj/
+App/Info.plist
+__pycache__/
+*.ipa

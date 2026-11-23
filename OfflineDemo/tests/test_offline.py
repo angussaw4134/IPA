@@ -17,12 +17,12 @@ class OfflineBuildTests(unittest.TestCase):
         self.assertEqual(len(set(hashes)),150)
         self.assertTrue(all(re.fullmatch('[a-f0-9]{64}',h) for h in hashes))
         text=(ROOT/'App/WinterStudioApp.swift').read_text()
-        self.assertIn('DEMO TESTING BUILD',text)
+        self.assertIn(r'DEMO TEST\nNOT REAL ID',text)
         self.assertIn('FICTIONAL SAMPLE PASS',text)
         self.assertNotIn('Service NSW',text)
     def test_bundle_is_separate(self):
         info=plistlib.loads((ROOT/'App/Info.plist').read_bytes())
-        self.assertEqual(info['CFBundleDisplayName'],'Winter Studio Demo')
+        self.assertEqual(info['CFBundleDisplayName'],'3377 Christmas Demo')
         self.assertNotIn('TestWebsiteURL',info)
         self.assertEqual(info['CFBundleURLTypes'][0]['CFBundleURLSchemes'],['winterstudiodemo'])
     def test_test_code_debug_only(self):

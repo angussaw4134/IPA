@@ -8,7 +8,7 @@ final class OfflineDemoUITests: XCTestCase {
         app.launch()
         let input = app.textFields["access-code"]
         XCTAssertTrue(input.waitForExistence(timeout: 15))
-        XCTAssertTrue(app.staticTexts["demo-label"].exists)
+        assertDemoLabel(in: app)
         input.tap()
         input.typeText("WRONG\n")
         XCTAssertTrue(app.staticTexts["access-error"].waitForExistence(timeout: 3))
@@ -16,6 +16,7 @@ final class OfflineDemoUITests: XCTestCase {
         input.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 5))
         input.typeText("WINTER-UI-TEST-ONLY\n")
         XCTAssertTrue(app.staticTexts["welcome"].waitForExistence(timeout: 8))
+        assertDemoLabel(in: app)
         screenshot("home")
         app.tabBars.buttons["Explore"].tap()
         XCTAssertTrue(app.buttons["save-lights"].waitForExistence(timeout: 3))
@@ -24,7 +25,7 @@ final class OfflineDemoUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Evening lights"].waitForExistence(timeout: 3))
         app.buttons["sample-pass"].tap()
         XCTAssertTrue(app.staticTexts["FICTIONAL SAMPLE PASS"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.staticTexts["demo-label"].exists)
+        assertDemoLabel(in: app)
         screenshot("sample-pass")
         app.buttons["Done"].tap()
         app.tabBars.buttons["Home"].tap()
@@ -42,6 +43,12 @@ final class OfflineDemoUITests: XCTestCase {
         app.tabBars.buttons["Wallet"].tap()
         XCTAssertTrue(app.staticTexts["Evening lights"].waitForExistence(timeout: 3))
         screenshot("persisted-wallet")
+    }
+    private func assertDemoLabel(in app: XCUIApplication, file: StaticString = #filePath, line: UInt = #line) {
+        let expected = ["DEMO", "TEST", "NOT", "REAL", "ID"]
+        let labels = app.staticTexts.matching(identifier: "demo-label").allElementsBoundByIndex
+        XCTAssertTrue(labels.contains { $0.label.split(whereSeparator: \.isWhitespace).map(String.init) == expected },
+                      "Expected the project demo label", file: file, line: line)
     }
     private func screenshot(_ name: String) {
         let item = XCTAttachment(screenshot: XCUIScreen.main.screenshot())

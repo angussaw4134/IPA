@@ -1,13 +1,13 @@
-WINTER STUDIO DEMO — fully offline iPhone app
+3377 CHRISTMAS DEMO — fully offline iPhone app
 
 This is a separate fictional demo, not a packaged government-licence replica.
 Home, Explore, Wallet, guides, settings, sample graphics and code validation are
 all compiled/bundled inside the app. No Cloudflare, website, API, admin panel,
 remote fonts/images, tracking, camera scanner or identity verification is used.
-The yellow DEMO TESTING BUILD label remains centred, including on sheets.
+The yellow DEMO TEST / NOT REAL ID label remains centred, including on sheets.
 
 Bundle ID: dev.accesshub.winterstudio.offline
-Display name: Winter Studio Demo
+Display name: 3377 Christmas Demo
 Minimum iOS: 16.0
 Optional deep link: winterstudiodemo://home (does not bypass demo activation)
 This app does not claim the old storefrontdemo URL scheme.

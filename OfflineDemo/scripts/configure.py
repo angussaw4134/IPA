@@ -50,10 +50,10 @@ test_ref = f'<BuildableReference BuildableIdentifier="primary" BlueprintIdentifi
 <AnalyzeAction buildConfiguration="Debug"/><ArchiveAction buildConfiguration="Release" revealArchiveInOrganizer="YES"/>
 </Scheme>''')
 info = {
- 'CFBundleDisplayName':'Winter Studio Demo','CFBundleName':'WinterStudio',
+ 'CFBundleDisplayName':'3377 Christmas Demo','CFBundleName':'WinterStudio',
  'CFBundleExecutable':'$(EXECUTABLE_NAME)','CFBundleIdentifier':'$(PRODUCT_BUNDLE_IDENTIFIER)',
  'CFBundlePackageType':'APPL','CFBundleInfoDictionaryVersion':'6.0',
- 'CFBundleShortVersionString':'1.0.0','CFBundleVersion':'1','LSRequiresIPhoneOS':True,
+ 'CFBundleShortVersionString':'1.0.1','CFBundleVersion':'2','LSRequiresIPhoneOS':True,
  'UILaunchScreen':{'UIColorName':'LaunchBackground'},'UIRequiredDeviceCapabilities':['arm64'],
  'UISupportedInterfaceOrientations':['UIInterfaceOrientationPortrait'],'UIUserInterfaceStyle':'Dark',
  'UIApplicationSceneManifest':{'UIApplicationSupportsMultipleScenes':False,'UISceneConfigurations':{}},

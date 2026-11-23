@@ -18,7 +18,7 @@ enum StudioStyle {
 
 struct DemoLabel: View {
     var body: some View {
-        Text("DEMO TESTING BUILD")
+        Text("DEMO TEST\nNOT REAL ID")
             .font(.system(size: 27, weight: .heavy, design: .rounded))
             .multilineTextAlignment(.center)
             .foregroundStyle(.yellow)

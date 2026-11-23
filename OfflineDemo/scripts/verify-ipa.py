@@ -1,5 +1,6 @@
 import json
 import plistlib
+import struct
 import sys
 import zipfile
 
@@ -7,7 +8,8 @@ with zipfile.ZipFile(sys.argv[1]) as ipa:
     root = 'Payload/WinterStudio.app/'
     info = plistlib.loads(ipa.read(root+'Info.plist'))
     assert info['CFBundleIdentifier']=='dev.accesshub.winterstudio.offline'
-    assert info['CFBundleDisplayName']=='Winter Studio Demo'
+    assert info['CFBundleDisplayName']=='3377 Christmas Demo'
+    assert info['CFBundleVersion']=='2'
     assert 'TestWebsiteURL' not in info
     assert 'NSAppTransportSecurity' not in info
     assert info['CFBundleURLTypes'][0]['CFBundleURLSchemes']==['winterstudiodemo']
@@ -15,7 +17,8 @@ with zipfile.ZipFile(sys.argv[1]) as ipa:
     assert len(keys)==len(set(keys))==150
     assert all(len(k)==64 and all(c in '0123456789abcdef' for c in k) for k in keys)
     executable = ipa.read(root+'WinterStudio')
-    assert b'DEMO TESTING BUILD' in executable
+    assert struct.unpack_from('<II', executable) == (0xfeedfacf, 0x0100000c), 'Expected a 64-bit ARM Mach-O'
+    assert b'DEMO TEST\nNOT REAL ID' in executable
     for forbidden in [b'workers.dev',b'3377christmas',b'Service NSW',b'WKWebView',b'https://']:
         assert forbidden not in executable, f'Unexpected external/legacy dependency: {forbidden!r}'
     assert not any(n.endswith(('.html','.js','.ipa')) for n in ipa.namelist())
